@@ -1,0 +1,8 @@
+lightning
+jsonargparse[signatures]
+torchvision
+transforms
+segmentation_models_pytorch
+datasets
+tensorboard
+pycocotools

@@ -1,0 +1,9 @@
+name: lightning_env
+channels:
+  - conda-forge
+dependencies:
+  - python==3.9
+  - mamba
+  - pip
+  - pip:
+    - -r requirements.txt

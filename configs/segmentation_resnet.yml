@@ -1,0 +1,26 @@
+---
+model: unet
+dataset: scene_parse_150
+path_dataset: False
+optimizer: adam
+wd: 0.0
+ignore_index: -100
+label_smoothing: 0.0001
+epochs: 10
+lr: 0.1
+learning_rate_schedule:
+ name: "LinearLR"
+batchsize: 4
+accumulate_grad_batches: 4
+gradient_clip_val: 1.0
+save_interval: 100
+save_dir: "mcocologs/resnet34/"
+resume_training: False
+val_check_interval: 1
+log_every_n_steps: 550
+accelerator: auto
+state_dict_path_load: False
+experment_name: "scene_parse_150 renset34"
+loss: cross_entropy
+
+
