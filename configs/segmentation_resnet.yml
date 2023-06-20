@@ -1,7 +1,14 @@
 ---
 model: unet
-dataset: scene_parse_150
-path_dataset: False
+dataset: custom_semantic_segmentation
+path_dataset: T:\trainingdata\befastelse\debugset\data\splitted
+path_labels: T:\trainingdata\befastelse\debugset\labels\splitted_labels
+data_sources: [rgb,cir]
+n_input_channels: 3
+all_txt: T:\trainingdata\befastelse\debugset\data\all.txt
+valid_txt: T:\trainingdata\befastelse\debugset\data\valid.txt
+train_txt: T:\trainingdata\befastelse\debugset\data\train.txt
+
 optimizer: adam
 wd: 0.0
 ignore_index: -100
@@ -20,7 +27,7 @@ val_check_interval: 1
 log_every_n_steps: 550
 accelerator: auto
 state_dict_path_load: False
-experment_name: "scene_parse_150 renset34"
+experment_name: "debugset_renset34"
 loss: cross_entropy
 
 

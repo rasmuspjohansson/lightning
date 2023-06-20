@@ -41,6 +41,23 @@ def train(args):
         #checkpoint_callback = ModelCheckpoint(dirpath='saved_models/'+args.experment_name+'/',every_n_epochs=args.save_interval)
         lr_monitor = LearningRateMonitor(logging_interval='epoch')
 
+        loggers= [CSVLogger(save_dir=save_dir)]
+        if os.name != "nt" or ("logger" in config_file) and (config_file["logger"]=="TensorBoard"):
+            loggers.append(TensorBoardLogger(save_dir=save_dir))
+            if os.name == "nt":
+                print("###########################################################################################")
+                print("The tensorboard logger causes freezing wen pressing ctr+C on windows.")
+                print("if you want to avoid this, remove logger: TensorBoard from your config file")
+                print("###########################################################################################")
+
+        else:
+            print("###########################################################################################")
+            print("The tensorboard logger causes freezing wen pressing ctr+C on windows.")
+            print("if you still want to use a tensorboard logger add logger: TensorBoard in your config file")
+            print("###########################################################################################")
+
+
+
         #default is to log once for every epoch
         #if not args.log_every_n_steps:
         #    args.log_every_n_steps = len(dataset.dataset_train/args.batchsize)
@@ -51,7 +68,9 @@ def train(args):
             devices="auto",  # limiting got iPython runs
             max_epochs=experiment_settings["epochs"],
             callbacks=[TQDMProgressBar(refresh_rate=20),lr_monitor],
-            logger=[TensorBoardLogger(save_dir=save_dir), CSVLogger(save_dir=save_dir)],
+            logger=loggers,
+            #The tensorboard logger causes freezing wen pressing ctr+C on windows. Commenting it
+            #,
             gradient_clip_val=float(experiment_settings["gradient_clip_val"]),accumulate_grad_batches=int(experiment_settings["accumulate_grad_batches"]),
 
 
@@ -82,6 +101,10 @@ if __name__ == "__main__":
 
 
     parser.add_argument("-c", "--config", help="path to config file ",nargs ='+',required=True)
+    parser.add_argument("--no_logger", help="not using logger avaids this bug  ", default=False,action='store_true')
+
+  
+    
     
 
     args = parser.parse_args()

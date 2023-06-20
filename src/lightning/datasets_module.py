@@ -40,7 +40,7 @@ def get_dataset(args):
     elif "coco" == args["dataset"]:
         return Coco(batch_size=args["batchsize"],data_dir=path_dataset)
     elif "custom_semantic_segmentation" == args["dataset"]:
-        return Custom_semantic_segmentation_dataset(batch_size=args["batchsize"],data_dir=path_dataset)
+        return Custom_semantic_segmentation_dataset(batch_size=args["batchsize"],data_dir=path_dataset,label_dir=args["path_labels"],data_sources=args["data_sources"],all_txt=args["all_txt"],valid_txt=args["valid_txt"],train_txt=args["train_txt"] )
     elif "imagenet1k" == args["dataset"]:
         return Imagenet1k(batch_size=args["batchsize"],data_dir=path_dataset)
     else:
@@ -52,7 +52,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
     A pure pytorch dataset for custom semantic segmentation tasks
 
     """
-    def __init__(self,files,shuffle = True,debug = False):
+    def __init__(self,files,labels,shuffle = True,debug = False):
         """
         @ arg files: a list of paths to the images in the dataset
 
@@ -61,12 +61,11 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         a_dataset/labels/masks/im_x.tif
         """
         self.files= files
-        if debug:
-            self.files = self.files[0:100]
-        if shuffle:
-            random.shuffle(self.files) #make sure the images are shuffled before training
+
+        #if shuffle:
+        #    random.shuffle(self.files) #make sure the images are shuffled before training
         #remove the images/filename.png and replace it with labels/masks/filename.png
-        self.labels= [path.parent.parent /pathlib.Path("labels/masks")/path.name for path in files]
+        self.labels= labels
 
 
         #some models asume data to be divisible by 32 (best handeled by making shure the dataset is in corect format form the beguinning or using padding)
@@ -76,7 +75,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
             [
                 transforms.Resize((1024, 1024)),
                 transforms.ToTensor(),
-                transforms.Normalize((0.485, 0.456, 0.406,0.4), (0.229, 0.224, 0.225,0.2)),
+                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
             ]
         )
         self.transform_label = transforms.Compose(
@@ -85,6 +84,11 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                 
             ]
         )
+    def open_data(self,path):
+        return Image.open(path)
+    def open_label(self,path):
+        return Image.open(path)
+
 
 
 
@@ -92,8 +96,9 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         file = self.files[i]
         label_file = self.labels[i]
 
-        img = Image.open(file)
-        label = Image.open(label_file)
+        img =self.open_data(file)
+        label =self.open_label(label_file)
+
 
         #img = torch.Tensor(np.array(img)).permute(2,0,1)
 
@@ -116,25 +121,36 @@ class Custom_semantic_segmentation_dataset():
     dataset_folder/valid.txt #txt file with one filename e.g im1.tif per row
     dataset_folder/train.txt #txt file with one filename e.g im1.tif per row
     """
-    def __init__(self,batch_size,data_dir):
+    def __init__(self,batch_size,data_dir,label_dir,data_sources,all_txt,valid_txt,train_txt):
         self.batch_size = batch_size
         self.data_dir =pathlib.Path(data_dir)
         self.n_classes = 12
-        self.image_paths_all = self.get_paths(self.data_dir,self.data_dir/"all.txt")
-        self.image_paths_valid = self.get_paths(self.data_dir,self.data_dir/"valid.txt")
-        self.image_paths_train = self.get_paths(self.data_dir,self.data_dir/"train.txt")
+
+        self.image_paths_all = self.get_paths(self.data_dir,all_txt)
+        self.image_paths_valid = self.get_paths(self.data_dir,valid_txt)
+        self.image_paths_train = self.get_paths(self.data_dir,train_txt)
+        self.label_paths_train= self.get_label_paths(label_dir,self.image_paths_train)
+        self.label_paths_valid = self.get_label_paths(label_dir, self.image_paths_valid)
 
 
 
-    def get_paths(self,path,txt_file):
+    def get_paths(self,folder_path,txt_file):
         """
         arg path : pathlib.Path
         txt_file : all.txt valid.txt etc with one filename per row
         """
 
         names = pathlib.Path(txt_file).read_text().split('\n')
-        paths = [path/"images"/pathlib.Path(name) for name in names if name.strip() != '']
+        paths = [folder_path/pathlib.Path("rgb")/pathlib.Path(name) for name in names if name.strip() != '']
         return paths
+
+    def get_label_paths(self,label_folder,files):
+
+        paths = [pathlib.Path(label_folder) / pathlib.Path(data_path).name for data_path in files]
+        return paths
+    def get_data(path,config):
+        return
+
 
 
 
@@ -156,8 +172,8 @@ class Custom_semantic_segmentation_dataset():
         # Assign train/val datasets for use in dataloaders
         if stage == "fit" or stage is None:
 
-            self.dataset_train= Semantic_segmentation_pytorch_dataset(files=self.image_paths_train)
-            self.dataset_val = Semantic_segmentation_pytorch_dataset(files=self.image_paths_valid)
+            self.dataset_train= Semantic_segmentation_pytorch_dataset(files=self.image_paths_train,labels=self.label_paths_train)
+            self.dataset_val = Semantic_segmentation_pytorch_dataset(files=self.image_paths_valid,labels=self.label_paths_valid)
 
 
     def train_dataloader(self):

@@ -1,3 +1,7 @@
+--extra-index-url https://download.pytorch.org/whl/cu117
+torch
+torchvision
+lightning
 lightning
 jsonargparse[signatures]
 torchvision
@@ -5,4 +9,3 @@ transforms
 segmentation_models_pytorch
 datasets
 tensorboard
-pycocotools

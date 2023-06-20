@@ -22,3 +22,4 @@ accelerator: auto
 state_dict_path_load: False
 experment_name: "mnist lenet origin"
 loss: cross_entropy
+
