@@ -12,6 +12,7 @@ import numpy as np
 from datasets import load_dataset
 from datasets.utils.file_utils import get_datasets_user_agent
 from huggingface_hub import cached_download, hf_hub_url
+import json
 
 
 
@@ -52,7 +53,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
     A pure pytorch dataset for custom semantic segmentation tasks
 
     """
-    def __init__(self,files,labels,shuffle = True,debug = False):
+    def __init__(self,files,labels,args,shuffle = True,debug = False):
         """
         @ arg files: a list of paths to the images in the dataset
 
@@ -60,6 +61,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         a_dataset/images/im_x.tif
         a_dataset/labels/masks/im_x.tif
         """
+        self.args =args
         self.files= files
 
         #if shuffle:
@@ -85,6 +87,9 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
             ]
         )
     def open_data(self,path):
+        data_sources = args["data_sources"]
+        input(data_sources)
+        input(json.loads(data_sources))
         return Image.open(path)
     def open_label(self,path):
         return Image.open(path)
