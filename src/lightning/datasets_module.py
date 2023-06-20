@@ -13,7 +13,9 @@ from datasets import load_dataset
 from datasets.utils.file_utils import get_datasets_user_agent
 from huggingface_hub import cached_download, hf_hub_url
 import json
+import rasterio
 
+import albumentations as A
 
 
 #using torchvision.datasets for training on different datasets
@@ -41,7 +43,7 @@ def get_dataset(args):
     elif "coco" == args["dataset"]:
         return Coco(batch_size=args["batchsize"],data_dir=path_dataset)
     elif "custom_semantic_segmentation" == args["dataset"]:
-        return Custom_semantic_segmentation_dataset(batch_size=args["batchsize"],data_dir=path_dataset,label_dir=args["path_labels"],data_sources=args["data_sources"],all_txt=args["all_txt"],valid_txt=args["valid_txt"],train_txt=args["train_txt"] )
+        return Custom_semantic_segmentation_dataset(path_dataset,args)
     elif "imagenet1k" == args["dataset"]:
         return Imagenet1k(batch_size=args["batchsize"],data_dir=path_dataset)
     else:
@@ -73,23 +75,39 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         #some models asume data to be divisible by 32 (best handeled by making shure the dataset is in corect format form the beguinning or using padding)
         #for simplicity we use a resize but this is not optimal
         #REPLACE WITH padifneeded from here https://albumentations.ai/docs/examples/example_kaggle_salt/
-        self.transform_data = transforms.Compose(
+        self.normalize = transforms.Compose(
             [
-                transforms.Resize((1024, 1024)),
+
                 transforms.ToTensor(),
-                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
             ]
         )
-        self.transform_label = transforms.Compose(
+        self.transform = A.Compose(
             [
-                transforms.Resize((1024, 1024)),
-                
-            ]
-        )
+                A.RandomCrop(width=256, height=256),
+                A.HorizontalFlip(p=0.5),
+                A.RandomBrightnessContrast(p=0.2),
+            ])
+
     def open_data(self,path):
-        data_sources = args["data_sources"]
-        input(data_sources)
-        input(json.loads(data_sources))
+        """
+        Open all differetn datasources and stack them ontop of each other to a single multichannel image
+        """
+        data_sources = self.args["data_sources"]
+        print("data_sources:"+str(data_sources))
+
+        for index,data_source in enumerate(data_sources):
+            new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read().astype(
+                'float32')
+            new_as_array = new_as_array[self.args["channels"][index]]
+            if index ==0:
+                as_array = new_as_array
+            else:
+                as_array = np.vstack((as_array, new_as_array))
+        return np.array(as_array,dtype=np.float32)
+
+
+
         return Image.open(path)
     def open_label(self,path):
         return Image.open(path)
@@ -103,14 +121,19 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
 
         img =self.open_data(file)
         label =self.open_label(label_file)
+        img = img.transpose([1,2,0])
 
 
         #img = torch.Tensor(np.array(img)).permute(2,0,1)
 
         #label = torch.tensor(np.array(label,dtype=int))
 
-        if self.transform_data:
-            (img,label) = (self.transform_data(img),np.array(self.transform_label(label),dtype=np.int64))
+        print(np.array(img).shape)
+        print(np.array(label).shape)
+
+        if self.transform:
+            (img,label) = (self.transform(image=img,mask= np.array(label,dtype=np.int64)))
+
 
 
         return (img,label)
@@ -126,12 +149,19 @@ class Custom_semantic_segmentation_dataset():
     dataset_folder/valid.txt #txt file with one filename e.g im1.tif per row
     dataset_folder/train.txt #txt file with one filename e.g im1.tif per row
     """
-    def __init__(self,batch_size,data_dir,label_dir,data_sources,all_txt,valid_txt,train_txt):
-        self.batch_size = batch_size
+    def __init__(self,data_dir,args):
+        self.batch_size = args["batchsize"]
+        label_dir = args["path_labels"]
+        data_sources = args["data_sources"]
+        all_txt =args["all_txt"]
+        valid_txt = args["valid_txt"]
+        train_txt = args["train_txt"]
+        self.args= args
+
         self.data_dir =pathlib.Path(data_dir)
         self.n_classes = 12
 
-        self.image_paths_all = self.get_paths(self.data_dir,all_txt)
+        self.image_paths_all = self.get_paths(self.data_dir,all_txt)[0:100]
         self.image_paths_valid = self.get_paths(self.data_dir,valid_txt)
         self.image_paths_train = self.get_paths(self.data_dir,train_txt)
         self.label_paths_train= self.get_label_paths(label_dir,self.image_paths_train)
@@ -177,8 +207,8 @@ class Custom_semantic_segmentation_dataset():
         # Assign train/val datasets for use in dataloaders
         if stage == "fit" or stage is None:
 
-            self.dataset_train= Semantic_segmentation_pytorch_dataset(files=self.image_paths_train,labels=self.label_paths_train)
-            self.dataset_val = Semantic_segmentation_pytorch_dataset(files=self.image_paths_valid,labels=self.label_paths_valid)
+            self.dataset_train= Semantic_segmentation_pytorch_dataset(files=self.image_paths_train,labels=self.label_paths_train,args=self.args)
+            self.dataset_val = Semantic_segmentation_pytorch_dataset(files=self.image_paths_valid,labels=self.label_paths_valid,args=self.args)
 
 
     def train_dataloader(self):

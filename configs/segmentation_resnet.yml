@@ -4,6 +4,7 @@ dataset: custom_semantic_segmentation
 path_dataset: T:\trainingdata\befastelse\debugset\data\splitted
 path_labels: T:\trainingdata\befastelse\debugset\labels\splitted_labels
 data_sources: [rgb,cir]
+channels: [[0,1,2],[0]]
 n_input_channels: 3
 all_txt: T:\trainingdata\befastelse\debugset\data\all.txt
 valid_txt: T:\trainingdata\befastelse\debugset\data\valid.txt

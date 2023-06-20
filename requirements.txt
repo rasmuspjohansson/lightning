@@ -9,3 +9,5 @@ transforms
 segmentation_models_pytorch
 datasets
 tensorboard
+rasterio
+albumentations
