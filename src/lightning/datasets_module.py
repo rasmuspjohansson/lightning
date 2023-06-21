@@ -87,9 +87,9 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
             [
                 A.RandomCrop(width=512, height=512),
                 A.HorizontalFlip(p=0.5),
-                A.RandomBrightnessContrast(p=0.2),
-                #A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],
-                #                                     max_pixel_value=255.0, always_apply=False, p=1.0),
+                #A.RandomBrightnessContrast(p=0.2), #this augmentation sometimes gives black images! seem to be related to teh range in the nput and a max/min value setting!
+                A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],
+                                                     max_pixel_value=255.0, always_apply=False, p=1.0),
 
             ])
 

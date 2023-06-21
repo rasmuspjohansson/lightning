@@ -46,3 +46,7 @@ stds: [0.229, 0.224, 0.225,0.15176421]
 num_sanity_val_steps: 0
 
 
+#visaulization
+Show_visualization: True
+
+

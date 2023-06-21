@@ -30,8 +30,10 @@ def train(args):
 
         save_dir = experiment_settings["save_dir"]
         dataset = datasets_module.get_dataset(experiment_settings)
-        show_visualization = True
-        if show_visualization:
+
+        #It is important to verify that the iamges look good after augmentations (no artifacts or anything else that causes the data to look very differetn than the un-augmetnted dat)
+
+        if experiment_settings["Show_visualization"]:
             visualize.visualize(dataset)
 
         model = models.get_model(experiment_settings,dataset.n_classes)
