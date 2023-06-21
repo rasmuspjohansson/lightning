@@ -11,3 +11,4 @@ datasets
 tensorboard
 rasterio
 albumentations
+matplotlib

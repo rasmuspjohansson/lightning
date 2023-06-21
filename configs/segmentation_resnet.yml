@@ -3,9 +3,11 @@ model: unet
 dataset: custom_semantic_segmentation
 path_dataset: T:\trainingdata\befastelse\debugset\data\splitted
 path_labels: T:\trainingdata\befastelse\debugset\labels\splitted_labels
+#data_sources: [rgb,cir,OrtoRGB,OrtoCIR,DSM,DTM]
+#channels: [[0,1,2],[0],[0,1,2],[0],[0],[0]]
 data_sources: [rgb,cir]
 channels: [[0,1,2],[0]]
-n_input_channels: 3
+n_input_channels: 4
 all_txt: T:\trainingdata\befastelse\debugset\data\all.txt
 valid_txt: T:\trainingdata\befastelse\debugset\data\valid.txt
 train_txt: T:\trainingdata\befastelse\debugset\data\train.txt
@@ -30,5 +32,17 @@ accelerator: auto
 state_dict_path_load: False
 experment_name: "debugset_renset34"
 loss: cross_entropy
+
+
+#normalization
+#means: [0.485, 0.456, 0.406,0.40779021,0.485, 0.456, 0.406,0.40779021,0.5,0.5]
+#stds: [0.229, 0.224, 0.225,0.15176421,0.229, 0.224, 0.225,0.15176421,1.0,1.0]
+means: [0.485, 0.456, 0.406,0.40779021]
+stds: [0.229, 0.224, 0.225,0.15176421]
+
+
+#pytorch lightning specific settings
+#https://lightning.ai/docs/pytorch/latest/common/trainer.html#num-sanity-val-steps
+num_sanity_val_steps: 0
 
 

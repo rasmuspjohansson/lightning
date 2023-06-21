@@ -9,7 +9,9 @@ from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger 
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
-
+from PIL import Image
+import numpy as np
+import visualize
 #this gave 0.52 validation accuracy: python train.py --model vit --dataset cifar10 -n localVIT100epochADAM --learning_rate_schedule NONE -o adam --lr 0.001 --loss cross_entropy. I need to get https://github.com/kentaroy47/vision-transformers-cifar10 to run and modify it with locally conected layer. 
  
 
@@ -28,6 +30,10 @@ def train(args):
 
         save_dir = experiment_settings["save_dir"]
         dataset = datasets_module.get_dataset(experiment_settings)
+        show_visualization = True
+        if show_visualization:
+            visualize.visualize(dataset)
+
         model = models.get_model(experiment_settings,dataset.n_classes)
         lightning_object = lightning_module.Lightning_module(dataset=dataset,model=model,args=experiment_settings)
 
@@ -72,6 +78,7 @@ def train(args):
             #The tensorboard logger causes freezing wen pressing ctr+C on windows. Commenting it
             #,
             gradient_clip_val=float(experiment_settings["gradient_clip_val"]),accumulate_grad_batches=int(experiment_settings["accumulate_grad_batches"]),
+            num_sanity_val_steps =experiment_settings["num_sanity_val_steps"]
 
 
         )

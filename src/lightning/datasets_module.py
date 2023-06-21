@@ -21,8 +21,9 @@ import albumentations as A
 #using torchvision.datasets for training on different datasets
 
 def debug_function(input):
-    print("debug function is running")
+    print("debug function start")
     print(input)
+    print("debug function end")
     return input
 def save_image_to_disk(input):
     input.save("./testim.jpg")
@@ -75,18 +76,21 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         #some models asume data to be divisible by 32 (best handeled by making shure the dataset is in corect format form the beguinning or using padding)
         #for simplicity we use a resize but this is not optimal
         #REPLACE WITH padifneeded from here https://albumentations.ai/docs/examples/example_kaggle_salt/
-        self.normalize = transforms.Compose(
+        self.normalize = A.Compose(
             [
 
-                transforms.ToTensor(),
-                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                #transforms.Normalize((0.485, 0.456, 0.406,0.5), (0.229, 0.224, 0.225,0.5))
             ]
         )
+
         self.transform = A.Compose(
             [
-                A.RandomCrop(width=256, height=256),
+                A.RandomCrop(width=512, height=512),
                 A.HorizontalFlip(p=0.5),
                 A.RandomBrightnessContrast(p=0.2),
+                A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],
+                                                     max_pixel_value=255.0, always_apply=False, p=1.0),
+
             ])
 
     def open_data(self,path):
@@ -94,7 +98,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         Open all differetn datasources and stack them ontop of each other to a single multichannel image
         """
         data_sources = self.args["data_sources"]
-        print("data_sources:"+str(data_sources))
+        #print("data_sources:"+str(data_sources))
 
         for index,data_source in enumerate(data_sources):
             new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read().astype(
@@ -106,14 +110,8 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                 as_array = np.vstack((as_array, new_as_array))
         return np.array(as_array,dtype=np.float32)
 
-
-
-        return Image.open(path)
     def open_label(self,path):
         return Image.open(path)
-
-
-
 
     def __getitem__(self, i):
         file = self.files[i]
@@ -123,17 +121,12 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         label =self.open_label(label_file)
         img = img.transpose([1,2,0])
 
-
-        #img = torch.Tensor(np.array(img)).permute(2,0,1)
-
-        #label = torch.tensor(np.array(label,dtype=int))
-
-        print(np.array(img).shape)
-        print(np.array(label).shape)
-
         if self.transform:
-            (img,label) = (self.transform(image=img,mask= np.array(label,dtype=np.int64)))
+            transformed= self.transform(image=img ,mask= np.array(label,dtype=np.int64))
+            (img, label) = (transformed["image"],transformed["mask"])
+            img = img.transpose([2,0, 1])
 
+        (img, label)=(np.array(img),np.array(label))
 
 
         return (img,label)
@@ -161,7 +154,7 @@ class Custom_semantic_segmentation_dataset():
         self.data_dir =pathlib.Path(data_dir)
         self.n_classes = 12
 
-        self.image_paths_all = self.get_paths(self.data_dir,all_txt)[0:100]
+        self.image_paths_all = self.get_paths(self.data_dir,all_txt)
         self.image_paths_valid = self.get_paths(self.data_dir,valid_txt)
         self.image_paths_train = self.get_paths(self.data_dir,train_txt)
         self.label_paths_train= self.get_label_paths(label_dir,self.image_paths_train)

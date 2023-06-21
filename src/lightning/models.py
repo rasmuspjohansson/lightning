@@ -56,6 +56,7 @@ class Unet(nn.Module):
         self.input_channels = n_input_channels
         self.model = smp.Unet('resnet34', encoder_weights='imagenet',classes=n_classes,in_channels=self.input_channels)
     def forward(self, x):
+        
         x = self.model.forward(x)
         return x
 
