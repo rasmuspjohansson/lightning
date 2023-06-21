@@ -1,0 +1,1 @@
+same functionality as in fasta2/predict.py 
