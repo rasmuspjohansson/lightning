@@ -85,11 +85,20 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
 
         self.transform = A.Compose(
             [
-                A.RandomCrop(width=512, height=512),
+                A.augmentations.geometric.transforms.PadIfNeeded(min_height=1024, min_width=1024),
+                A.augmentations.geometric.transforms.ShiftScaleRotate(p=0.5),
+                A.RandomBrightnessContrast(p=0.2),
+                A.augmentations.transforms.GaussNoise(p=1, mean=0),
                 A.HorizontalFlip(p=0.5),
-                #A.RandomBrightnessContrast(p=0.2), #this augmentation sometimes gives black images! seem to be related to teh range in the nput and a max/min value setting!
+
                 A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],
                                                      max_pixel_value=255.0, always_apply=False, p=1.0),
+                #Notes regarding albumetations transforms#
+                #when sending float32 data to albumentations it treat it differently than if its uint8.
+                #for float32 it asumes that data is zero normalized.
+                #When working with float32 data we therefore need to normalize the data before aplying some of the transforms
+                #If data is uint8 we should do the normalization in the end instead
+
 
             ])
 
@@ -101,14 +110,13 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         #print("data_sources:"+str(data_sources))
 
         for index,data_source in enumerate(data_sources):
-            new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read().astype(
-                'float32')
+            new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read()
             new_as_array = new_as_array[self.args["channels"][index]]
             if index ==0:
                 as_array = new_as_array
             else:
                 as_array = np.vstack((as_array, new_as_array))
-        return np.array(as_array,dtype=np.float32)
+        return as_array
 
     def open_label(self,path):
         return Image.open(path)
@@ -118,16 +126,17 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         label_file = self.labels[i]
 
         img =self.open_data(file)
+
         label =self.open_label(label_file)
+        #albumetation asume dimensions [ y ,x,channel]
         img = img.transpose([1,2,0])
 
-        if self.transform:
-            transformed= self.transform(image=img ,mask= np.array(label,dtype=np.int64))
-            (img, label) = (transformed["image"],transformed["mask"])
-            img = img.transpose([2,0, 1])
 
+        transformed= self.transform(image=img ,mask= np.array(label,dtype=np.int64))
+        (img, label) = (transformed["image"],transformed["mask"])
+        # after aplying the transform we need to turn it back into [channel, y,x] format
+        img = img.transpose([2,0, 1])
         (img, label)=(np.array(img),np.array(label))
-
 
         return (img,label)
 

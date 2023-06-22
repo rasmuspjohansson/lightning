@@ -1,1 +1,1 @@
-same functionality as in fasta2/predict.py 
+same functionality as in fasta2/predict.py

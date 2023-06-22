@@ -47,6 +47,7 @@ num_sanity_val_steps: 0
 
 
 #visaulization
-Show_visualization: True
+#set this to a positive number in order to visualize the data as it looks after transforms have been aplied
+nr_of_visualizations: 2
 
 

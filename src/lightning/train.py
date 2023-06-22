@@ -33,8 +33,8 @@ def train(args):
 
         #It is important to verify that the iamges look good after augmentations (no artifacts or anything else that causes the data to look very differetn than the un-augmetnted dat)
 
-        if experiment_settings["Show_visualization"]:
-            visualize.visualize(dataset)
+        if experiment_settings["nr_of_visualizations"] >0:
+            visualize.visualize(dataset,experiment_settings)
 
         model = models.get_model(experiment_settings,dataset.n_classes)
         lightning_object = lightning_module.Lightning_module(dataset=dataset,model=model,args=experiment_settings)
