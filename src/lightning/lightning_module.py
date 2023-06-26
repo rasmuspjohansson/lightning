@@ -92,14 +92,17 @@ class Lightning_module(LightningModule):
         """
         https://lightning.ai/docs/pytorch/stable/deploy/production_basic.html
         """
-        (data,label) = batch
-        print("in predict")
-        print(len(batch))
-        print("[0] :"+str(batch[0].shape))
-        print("[1] :" + str(batch[1].shape))
-        print(batch[0])
-        print(batch[1])
-        return self(batch[0])
+        try:
+            (data,label) = batch
+        except:
+            data = batch
+
+        print("data batch shape loaded for prediction :"+str(data.shape))
+        result = self(data)
+
+        print("result in predict step :"+str(result))
+
+        return result
 
 
 
