@@ -166,7 +166,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         img = self.open_data(file)
         # albumetation asume dimensions [ y ,x,channel]
         img = img.transpose([1, 2, 0])
-        if self.labels ==None:
+        if not self.labels:
             #if we dont have any labels we still apply the transforms
             transformed = self.transform(image=img)
             img = (transformed["image"])
