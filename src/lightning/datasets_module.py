@@ -173,8 +173,8 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
             # after aplying the transform we need to turn it back into [channel, y,x] format
             img = img.transpose([2, 0, 1])
             img= np.array(img)
-            #by returning a pair instead of just the image we can use __getitem on dataset that contains labels AND dataset that does not contain labels , in the same way
-            return (img,None)
+            
+            return img
         else:
             label_file = self.labels[i]
             label =self.open_label(label_file)
