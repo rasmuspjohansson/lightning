@@ -213,9 +213,10 @@ class Custom_semantic_segmentation_dataset():
         self.image_paths_all = self.get_paths(self.data_dir,all_txt)
         self.image_paths_valid = self.get_paths(self.data_dir,valid_txt)
         self.image_paths_train = self.get_paths(self.data_dir,train_txt)
-        self.label_paths_train= self.get_label_paths(label_dir,self.image_paths_train)
-        self.label_paths_valid = self.get_label_paths(label_dir, self.image_paths_valid)
-        self.label_paths_all = self.get_label_paths(label_dir, self.image_paths_all)
+        if label_dir:
+            self.label_paths_train= self.get_label_paths(label_dir,self.image_paths_train)
+            self.label_paths_valid = self.get_label_paths(label_dir, self.image_paths_valid)
+            self.label_paths_all = self.get_label_paths(label_dir, self.image_paths_all)
 
 
 
