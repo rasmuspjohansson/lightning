@@ -88,6 +88,12 @@ class Lightning_module(LightningModule):
         #log how many epochs we have finnished (e.g 1.25 epochs) so we can use this as x axis when plotting
         self.log("epochs_as_float",float(self.epochs_done_as_float ), prog_bar=False)
 
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        """
+        https://lightning.ai/docs/pytorch/stable/deploy/production_basic.html
+        """
+        return self(batch)
+
 
 
 

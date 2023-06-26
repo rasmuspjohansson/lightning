@@ -215,6 +215,7 @@ class Custom_semantic_segmentation_dataset():
         self.image_paths_train = self.get_paths(self.data_dir,train_txt)
         self.label_paths_train= self.get_label_paths(label_dir,self.image_paths_train)
         self.label_paths_valid = self.get_label_paths(label_dir, self.image_paths_valid)
+        self.label_paths_all = self.get_label_paths(label_dir, self.image_paths_all)
 
 
 
@@ -258,6 +259,7 @@ class Custom_semantic_segmentation_dataset():
 
             self.dataset_train= Semantic_segmentation_pytorch_dataset(files=self.image_paths_train,labels=self.label_paths_train,args=self.args)
             self.dataset_val = Semantic_segmentation_pytorch_dataset(files=self.image_paths_valid,labels=self.label_paths_valid,args=self.args)
+            self.dataset_all = Semantic_segmentation_pytorch_dataset(files=self.image_paths_all,labels=self.label_paths_all,args=self.args)
 
 
     def train_dataloader(self):
@@ -271,6 +273,11 @@ class Custom_semantic_segmentation_dataset():
         function for getting dataloader to the validation set
         """
         return DataLoader(self.dataset_val, batch_size=self.batch_size, num_workers=3)
+    def all_dataloader(self):
+        """
+        function for getting dataloader to the all.txt set
+        """
+        return DataLoader(self.dataset_all, batch_size=self.batch_size, num_workers=3)
 
 class Scene_parse_150():
     """
