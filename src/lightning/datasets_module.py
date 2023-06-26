@@ -141,7 +141,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                 as_array = np.vstack((as_array, new_as_array))
 
 
-        print("loaded data")
+
         dtypes= {"uint8":np.uint8,"float32":np.float32}
         as_array = np.array(as_array,dtype= dtypes[self.args["convert_input_data_to"]])
 
@@ -163,29 +163,29 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         file = self.files[i]
-        label_file = self.labels[i]
-
-        img =self.open_data(file)
-
-        label =self.open_label(label_file)
-        #albumetation asume dimensions [ y ,x,channel]
-        img = img.transpose([1,2,0])
-
-
-
-        transformed= self.transform(image=img ,mask= np.array(label,dtype=np.int64))
-        (img, label) = (transformed["image"],transformed["mask"])
-        # after aplying the transform we need to turn it back into [channel, y,x] format
-        img = img.transpose([2,0, 1])
-        print("transformed data")
-        print(img.flatten().max())
-        print(img.flatten().min())
-
-        (img, label)=(np.array(img),np.array(label))
-        #cross entropy loss wants a int64 as input
-        label = np.array(label,dtype=np.int64)
-
-        return (img,label)
+        img = self.open_data(file)
+        # albumetation asume dimensions [ y ,x,channel]
+        img = img.transpose([1, 2, 0])
+        if self.labels ==None:
+            #if we dont have any labels we still apply the transforms
+            transformed = self.transform(image=img)
+            img = (transformed["image"])
+            # after aplying the transform we need to turn it back into [channel, y,x] format
+            img = img.transpose([2, 0, 1])
+            img= np.array(img)
+            #by returning a pair instead of just the image we can use __getitem on dataset that contains labels AND dataset that does not contain labels , in the same way
+            return (img,None)
+        else:
+            label_file = self.labels[i]
+            label =self.open_label(label_file)
+            transformed= self.transform(image=img ,mask= np.array(label,dtype=np.int64))
+            (img, label) = (transformed["image"],transformed["mask"])
+            # after aplying the transform we need to turn it back into [channel, y,x] format
+            img = img.transpose([2,0, 1])
+            (img, label)=(np.array(img),np.array(label))
+            #cross entropy loss wants a int64 as input
+            label = np.array(label,dtype=np.int64)
+            return (img,label)
 
     def __len__(self): return len(self.files)
 
