@@ -12,6 +12,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from PIL import Image
 import numpy as np
 import visualize
+import datetime
 #this gave 0.52 validation accuracy: python train.py --model vit --dataset cifar10 -n localVIT100epochADAM --learning_rate_schedule NONE -o adam --lr 0.001 --loss cross_entropy. I need to get https://github.com/kentaroy47/vision-transformers-cifar10 to run and modify it with locally conected layer. 
  
 
@@ -34,7 +35,7 @@ def train(args):
         #It is important to verify that the iamges look good after augmentations (no artifacts or anything else that causes the data to look very differetn than the un-augmetnted dat)
 
         if experiment_settings["nr_of_visualizations"] >0:
-            visualize.visualize(dataset,experiment_settings)
+            visualize.visualize_dataset(dataset,experiment_settings)
 
         model = models.get_model(experiment_settings,dataset.n_classes)
         lightning_object = lightning_module.Lightning_module(dataset=dataset,model=model,args=experiment_settings)
@@ -46,8 +47,22 @@ def train(args):
             print("loaded the state dict")
 
 
-        #checkpoint_callback = ModelCheckpoint(dirpath='saved_models/'+args.experment_name+'/',every_n_epochs=args.save_interval)
+        #We want to save the weights every X hours
+        checkpoint_callback1 = ModelCheckpoint(dirpath=save_dir+"/"+"interval_checkpoints",train_time_interval=datetime.timedelta(hours=0.01),filename="TEST-{epoch:02d}-{val_loss:.2f}")
+        #We want to save the weight every epoch
+        checkpoint_callback2 = ModelCheckpoint(dirpath=save_dir+"/"+"epoch_checkpoints", every_n_epochs=1,filename="TEST-{epoch:02d}-{val_loss:.2f}")
+        # saves top-K checkpoints based on "val_loss" metric
+        checkpoint_callback3 = ModelCheckpoint(
+            save_top_k=3,
+            monitor="val_loss",
+            mode="min",
+            dirpath=save_dir+"/"+"valloss_checkpoints",
+            filename="TEST-{epoch:02d}-{val_loss:.2f}"
+        )
+
         lr_monitor = LearningRateMonitor(logging_interval='epoch')
+        callbacks = [TQDMProgressBar(refresh_rate=20), lr_monitor, checkpoint_callback1, checkpoint_callback2,checkpoint_callback3]
+
 
         loggers= [CSVLogger(save_dir=save_dir)]
         if os.name != "nt" or ("logger" in config_file) and (config_file["logger"]=="TensorBoard"):
@@ -70,12 +85,12 @@ def train(args):
         #if not args.log_every_n_steps:
         #    args.log_every_n_steps = len(dataset.dataset_train/args.batchsize)
 
-        #callbacks=[TQDMProgressBar(refresh_rate=20),lr_monitor,checkpoint_callback],
+
         trainer = Trainer(
             accelerator=experiment_settings["accelerator"],
             devices="auto",  # limiting got iPython runs
             max_epochs=experiment_settings["epochs"],
-            callbacks=[TQDMProgressBar(refresh_rate=20),lr_monitor],
+            callbacks=callbacks,
             logger=loggers,
             #The tensorboard logger causes freezing wen pressing ctr+C on windows. Commenting it
             #,

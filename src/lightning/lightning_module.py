@@ -3,6 +3,9 @@ import torch
 from pytorch_lightning import LightningModule, Trainer
 from torch.nn import functional as F
 from torchmetrics import Accuracy
+import visualize
+import numpy as np
+from PIL import Image
 #from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR # this seems to be incompatible with pytorch2 right now
 
 class Lightning_module(LightningModule):
@@ -97,12 +100,31 @@ class Lightning_module(LightningModule):
         except:
             data = batch
 
+
         print("data batch shape loaded for prediction :"+str(data.shape))
         result = self(data)
+        # move data from gpu to cpu in order to be able to turn it into numpy array
+        data = data.cpu()
+        result = result.cpu()
 
-        print("result in predict step :"+str(result))
 
-        return result
+        print("result in predict step :"+str(result.shape))
+        #we also need to get the names for the data in the batch
+        filenames_for_batch = self.dataset.image_paths_all[batch_idx*self.dataset.batch_size:(batch_idx+1)*self.dataset.batch_size]
+        print("filenames for the data in the batch :"+str(filenames_for_batch))
+
+        for i,file_name in enumerate(filenames_for_batch):
+            print("filename:"+str(filenames_for_batch[i]))
+            rgb_indexes=[0,1,2]
+            normalized_rgb_data = data[i][rgb_indexes]
+            raw_input= np.array(Image.open(filenames_for_batch[i]))
+            un_normalized_transformed_input = visualize.un_normalize(normalized_rgb_data, means=np.array(self.args["means"])[rgb_indexes], stds=np.array(self.args["stds"])[rgb_indexes]).transpose([1, 2, 0])
+            infered_prediction = result[i].argmax(axis=0)
+            visualize.visualize_input_and_output(raw_input=raw_input,un_normalized_transformed_input=un_normalized_transformed_input,infered_prediction=infered_prediction)
+
+            input("first image predicted. pres enter for next")
+
+
 
 
 

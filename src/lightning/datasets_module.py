@@ -56,7 +56,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
     A pure pytorch dataset for custom semantic segmentation tasks
 
     """
-    def __init__(self,files,labels,args,shuffle = True,always_apply = False,collect_statistics = False):
+    def __init__(self,files,labels,args,always_apply = False,collect_statistics = False):
         """
         @ arg files: a list of paths to the images in the dataset
 
@@ -68,9 +68,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         self.args =args
         self.files= files
 
-        #if shuffle:
-        #    random.shuffle(self.files) #make sure the images are shuffled before training
-        #remove the images/filename.png and replace it with labels/masks/filename.png
+        
         self.labels= labels
 
         # Collecting means and stds from the raw data
@@ -173,7 +171,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
             # after aplying the transform we need to turn it back into [channel, y,x] format
             img = img.transpose([2, 0, 1])
             img= np.array(img)
-            
+
             return img
         else:
             label_file = self.labels[i]
