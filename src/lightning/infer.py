@@ -10,6 +10,7 @@ import numpy as np
 import visualize
 import yaml
 
+
 def infer(args):
     for config_file in args.config:
         with open(config_file, 'r') as f:
@@ -20,22 +21,23 @@ def infer(args):
 
         # It is important to verify that the iamges look good after augmentations (no artifacts or anything else that causes the data to look very differetn than the un-augmetnted dat)
 
-        if experiment_settings["nr_of_visualizations"] > 0:
-            visualize.visualize(dataset, experiment_settings)
+        if experiment_settings["nr_of_images_to_visualize"] > 0:
+            visualize.visualize_dataset(dataset, experiment_settings)
 
         model = models.get_model(experiment_settings, dataset.n_classes)
         lightning_object = lightning_module.Lightning_module(dataset=dataset, model=model, args=experiment_settings)
 
         if experiment_settings["state_dict_path_load"]:
-            print("loading the weights from a checpoint (no lr or other meta parameters)")
-            lightning_object.load_state_dict(torch.load(experiment_settings["state_dict_path_load"])["state_dict"])
+            print("loading the weights from a checkpoint (no lr or other meta parameters)")
+            #lightning_object.load_state_dict(torch.load(experiment_settings["state_dict_path_load"])["state_dict"])
+            lightning_object.load_from_checkpoint(experiment_settings["state_dict_path_load"])
             print("loaded the state dict")
 
         # callbacks=[TQDMProgressBar(refresh_rate=20),lr_monitor,checkpoint_callback],
         trainer = Trainer(devices="auto")
         dataset.setup()
         result=trainer.predict(lightning_object, dataset.all_dataloader())
-        print("result:"+str(result))
+
 
 
 

@@ -76,6 +76,8 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         self.collect_statistics = collect_statistics
         self.collected_means=[]
         self.collected_stds = []
+        
+        
 
 
 
