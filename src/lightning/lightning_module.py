@@ -61,6 +61,17 @@ class Lightning_module(LightningModule):
         #    loss = F.nll_loss(logits, y)
         preds = torch.argmax(logits, dim=1)
 
+        if self.args["print_label_and_prediction_histogram"]:
+            y_numpy = y.cpu()
+            preds_numpy = preds.cpu()
+            for i in range(y_numpy.shape[0]):
+                print("label histogram::")
+                print(np.histogram(y_numpy[i], bins=list(range(self.dataset.n_classes+1))))
+
+                print("prediction histogram::")
+                print(np.histogram(preds_numpy[i], bins=list(range(self.dataset.n_classes+1))))
+
+
         #compute accuracy on batch and return result.
         #We use forward() instead of update() because we want to know how accuray on the trainingset changes for fractions of epochs
         #forward()  updates the accuracy for the complete dataset (in by calling update() but also returns the accuracy for the current batch/input
@@ -128,7 +139,7 @@ class Lightning_module(LightningModule):
             print(infered_prediction.shape)
             print(infered_prediction.max())
             print(infered_prediction.min())
-            print("predictions histogram : "+str(np.histogram(a, bins=list(range(self.dataset.n_classes+1)))))
+            print("predictions histogram : "+str(np.histogram(infered_prediction, bins=list(range(self.dataset.n_classes+1)))))
 
             if label is None:
                 label_for_im = None
