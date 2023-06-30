@@ -128,6 +128,8 @@ class Lightning_module(LightningModule):
             print(infered_prediction.shape)
             print(infered_prediction.max())
             print(infered_prediction.min())
+            print("predictions histogram : "+str(np.histogram(a, bins=list(range(self.dataset.n_classes+1)))))
+
             if label is None:
                 label_for_im = None
             else:
