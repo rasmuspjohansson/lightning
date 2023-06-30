@@ -50,7 +50,7 @@ def train(args):
 
 
         #We want to save the weights every X hours
-        checkpoint_callback1 = ModelCheckpoint(dirpath=save_dir+"/"+"interval_checkpoints",train_time_interval=datetime.timedelta(hours=0.01),filename=experment_name+"-{epoch:02d}-{val_loss:.2f}")
+        checkpoint_callback1 = ModelCheckpoint(dirpath=save_dir+"/"+"interval_checkpoints",train_time_interval=datetime.timedelta(hours=1.0),filename=experment_name+"-{epoch:02d}-{val_loss:.2f}")
         #We want to save the weight every epoch (save_top_k=-1 makes sure that every checkpoint is kept on disk)
         checkpoint_callback2 = ModelCheckpoint(dirpath=save_dir+"/"+"epoch_checkpoints", every_n_epochs=1,filename=experment_name+"-{epoch:02d}-{val_loss:.2f}",save_top_k=-1)
         # saves top-K checkpoints based on "val_loss" metric
@@ -63,7 +63,7 @@ def train(args):
         )
 
         lr_monitor = LearningRateMonitor(logging_interval='epoch')
-        callbacks = [TQDMProgressBar(refresh_rate=20), lr_monitor, checkpoint_callback1, checkpoint_callback2,checkpoint_callback3]
+        callbacks = [TQDMProgressBar(refresh_rate=20), lr_monitor, checkpoint_callback2,checkpoint_callback3]
 
 
         loggers= [CSVLogger(save_dir=save_dir)]
