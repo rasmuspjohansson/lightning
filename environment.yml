@@ -1,4 +1,4 @@
-name: lightning_env
+name: lightning_environment
 channels:
   - conda-forge
 dependencies:

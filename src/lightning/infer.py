@@ -29,8 +29,8 @@ def infer(args):
 
         if experiment_settings["state_dict_path_load"]:
             print("loading the weights from a checkpoint (no lr or other meta parameters)")
-            #lightning_object.load_state_dict(torch.load(experiment_settings["state_dict_path_load"])["state_dict"])
-            lightning_object.load_from_checkpoint(experiment_settings["state_dict_path_load"])
+            lightning_object.load_state_dict(torch.load(experiment_settings["state_dict_path_load"])["state_dict"])
+            #lightning_object.load_from_checkpoint(experiment_settings["state_dict_path_load"])
             print("loaded the state dict")
 
         # callbacks=[TQDMProgressBar(refresh_rate=20),lr_monitor,checkpoint_callback],
