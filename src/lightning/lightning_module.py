@@ -97,7 +97,7 @@ class Lightning_module(LightningModule):
         https://lightning.ai/docs/pytorch/stable/deploy/production_basic.html
         """
         #Prediction can be done on dataset with or without labels
-        input("batch_idx:"+str(batch_idx))
+
         try:
             (data,label) = batch
             label = label.cpu()
@@ -134,8 +134,8 @@ class Lightning_module(LightningModule):
                 label_for_im = label[i]
 
 
-            show_input_and_output = True
-            if show_input_and_output:
+
+            if self.args["show_input_and_output"]:
                 visualize.visualize_input_output_and_label(raw_input=raw_input,label=label_for_im,un_normalized_transformed_input=un_normalized_transformed_input,infered_prediction=infered_prediction,file_name=file_name)
             saving_geotif.save_output(a_file=filenames_for_batch[i],probs=result[i],experiment_settings_dict=self.args,show=False)
 
