@@ -76,54 +76,59 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         self.collect_statistics = collect_statistics
         self.collected_means=[]
         self.collected_stds = []
-        
-        
+
+
+        if self.args["transforms"]:
+            self.transform = A.Compose(
+                [
+                    A.augmentations.geometric.transforms.PadIfNeeded(min_height=1024, min_width=1024),
+                    A.augmentations.geometric.transforms.ShiftScaleRotate(p=0.5,always_apply=always_apply),
+
+                    #
+                    A.VerticalFlip(p=0.5,always_apply=always_apply),
+                    A.Transpose(p=0.5,always_apply=always_apply),
+                    A.RandomRotate90(p=0.5,always_apply=always_apply),
+                    A.HorizontalFlip(p=0.5,always_apply=always_apply),
+                    #expects 1-channel or 3-channel images. A.augmentations.transforms.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, p=0.5,always_apply=always_apply),
+                    #must be RGB A.augmentations.transforms.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5),p=0.5,always_apply=always_apply),
+                    A.augmentations.transforms.PixelDropout(dropout_prob=0.01, per_channel=False, drop_value=0, mask_drop_value=None, always_apply=always_apply, p=0.2),
+                    A.augmentations.transforms.RandomBrightnessContrast (brightness_limit=0.2, contrast_limit=0.2, brightness_by_max=True,always_apply=always_apply, p=0.5),
+                    #expects 3-channel images A.augmentations.transforms.RandomFog(fog_coef_lower=0.3, fog_coef_upper=1, alpha_coef=0.08,always_apply=always_apply, p=0.5),
+                    A.augmentations.transforms.Downscale(scale_min=0.9, scale_max=0.9,p=0.1,always_apply=always_apply),
+
+                    A.augmentations.transforms.RandomGamma (gamma_limit=(80, 120), eps=None,always_apply=always_apply, p=0.5),
+                    A.augmentations.transforms.RandomGridShuffle(grid=(3, 3),always_apply=always_apply, p=0.2),
+                    A.augmentations.transforms.RandomShadow (shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=1, num_shadows_upper=2, shadow_dimension=5,always_apply=always_apply, p=0.5),
+                    #expects 3-channel images A.augmentations.transforms.RGBShift(r_shift_limit=20, g_shift_limit=20, b_shift_limit=20,always_apply=always_apply, p=0.5),
+                    #cannot reshape array of size 3145728 into shape (1024,1024,4) A.augmentations.transforms.JpegCompression(quality_lower=99, quality_upper=100,always_apply=always_apply, p=0.5),
 
 
 
+                    A.augmentations.transforms.GaussNoise(mean=0, per_channel=True,
+                                                          always_apply=always_apply, p=0.5),
 
-        self.transform = A.Compose(
-            [
-                A.augmentations.geometric.transforms.PadIfNeeded(min_height=1024, min_width=1024),
-                A.augmentations.geometric.transforms.ShiftScaleRotate(p=0.5,always_apply=always_apply),
-
-                #
-                A.VerticalFlip(p=0.5,always_apply=always_apply),
-                A.Transpose(p=0.5,always_apply=always_apply),
-                A.RandomRotate90(p=0.5,always_apply=always_apply),
-                A.HorizontalFlip(p=0.5,always_apply=always_apply),
-                #expects 1-channel or 3-channel images. A.augmentations.transforms.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, p=0.5,always_apply=always_apply),
-                #must be RGB A.augmentations.transforms.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5),p=0.5,always_apply=always_apply),
-                A.augmentations.transforms.PixelDropout(dropout_prob=0.01, per_channel=False, drop_value=0, mask_drop_value=None, always_apply=always_apply, p=0.2),
-                A.augmentations.transforms.RandomBrightnessContrast (brightness_limit=0.2, contrast_limit=0.2, brightness_by_max=True,always_apply=always_apply, p=0.5),
-                #expects 3-channel images A.augmentations.transforms.RandomFog(fog_coef_lower=0.3, fog_coef_upper=1, alpha_coef=0.08,always_apply=always_apply, p=0.5),
-                A.augmentations.transforms.Downscale(scale_min=0.9, scale_max=0.9,p=0.1,always_apply=always_apply),
-
-                A.augmentations.transforms.RandomGamma (gamma_limit=(80, 120), eps=None,always_apply=always_apply, p=0.5),
-                A.augmentations.transforms.RandomGridShuffle(grid=(3, 3),always_apply=always_apply, p=0.2),
-                A.augmentations.transforms.RandomShadow (shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=1, num_shadows_upper=2, shadow_dimension=5,always_apply=always_apply, p=0.5),
-                #expects 3-channel images A.augmentations.transforms.RGBShift(r_shift_limit=20, g_shift_limit=20, b_shift_limit=20,always_apply=always_apply, p=0.5),
-                #cannot reshape array of size 3145728 into shape (1024,1024,4) A.augmentations.transforms.JpegCompression(quality_lower=99, quality_upper=100,always_apply=always_apply, p=0.5),
-
-
-
-                A.augmentations.transforms.GaussNoise(mean=0, per_channel=True,
-                                                      always_apply=always_apply, p=0.5),
-
-                A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],max_pixel_value=255.0, always_apply=False, p=1.0),
+                    A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],max_pixel_value=255.0, always_apply=False, p=1.0),
 
 
 
 
 
-                #Notes regarding albumetations transforms#
-                #when sending float32 data to albumentations it treat it differently than if its uint8.
-                #for float32 it asumes that data is zero normalized.
-                #When working with float32 data we therefore need to normalize the data before aplying some of the transforms
-                #If data is uint8 we should do the normalization in the end instead
+                    #Notes regarding albumetations transforms#
+                    #when sending float32 data to albumentations it treat it differently than if its uint8.
+                    #for float32 it asumes that data is zero normalized.
+                    #When working with float32 data we therefore need to normalize the data before aplying some of the transforms
+                    #If data is uint8 we should do the normalization in the end instead
 
 
-            ])
+                ])
+        else:
+
+            self.transform = A.Compose(
+                [
+                    A.augmentations.geometric.transforms.PadIfNeeded(min_height=1024, min_width=1024),
+                    A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],
+                                                         max_pixel_value=255.0, always_apply=False, p=1.0),
+                ])
 
     def open_data(self,path):
         """
