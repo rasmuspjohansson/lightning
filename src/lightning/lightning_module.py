@@ -184,7 +184,7 @@ class Lightning_module(LightningModule):
             sys.exit("NO VALID OPTIMIZER")
 
 
-        steps_per_epoch =len(self.dataset.dataset_train)//self.args["batchsize"]
+        steps_per_epoch =len(self.dataset.dataset_train)//(self.args["batchsize"]*self.args["accumulate_grad_batches"])
         total_steps = steps_per_epoch*self.args["epochs"]
         print(self.args["learning_rate_schedule"])
         print(self.args["learning_rate_schedule"]["name"])
