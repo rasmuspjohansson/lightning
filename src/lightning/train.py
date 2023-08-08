@@ -66,9 +66,9 @@ def train(args):
         callbacks = [TQDMProgressBar(refresh_rate=20), lr_monitor, checkpoint_callback2,checkpoint_callback3]
 
 
-        loggers= [CSVLogger(save_dir=save_dir)]
+        loggers= [CSVLogger(save_dir=save_dir+"_CSV")]
         if os.name != "nt" or ("logger" in config_file) and (config_file["logger"]=="TensorBoard"):
-            loggers.append(TensorBoardLogger(save_dir=save_dir))
+            loggers.append(TensorBoardLogger(save_dir=save_dir+"_Tensorboard"))
             if os.name == "nt":
                 print("###########################################################################################")
                 print("The tensorboard logger causes freezing wen pressing ctr+C on windows.")
