@@ -186,6 +186,12 @@ class Lightning_module(LightningModule):
 
         steps_per_epoch =len(self.dataset.dataset_train)//(self.args["batchsize"]*self.args["accumulate_grad_batches"])
         total_steps = steps_per_epoch*self.args["epochs"]
+        print("samples in trainingset:"+str(len(self.dataset.dataset_train)))
+        print("batchsize times accumulate_grad_batches:")+str((self.args["batchsize"] * self.args["accumulate_grad_batches"]))
+        print("steps_per_epoch:"+str(steps_per_epoch))
+        print("total_steps:" + str(total_steps))
+
+
         print(self.args["learning_rate_schedule"])
         print(self.args["learning_rate_schedule"]["name"])
         if self.args["learning_rate_schedule"] == "fit_one_cykle":
