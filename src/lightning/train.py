@@ -67,8 +67,10 @@ def train(args):
 
 
         loggers= [CSVLogger(save_dir=save_dir+"_CSV")]
-        if os.name != "nt" or ("logger" in config_file) and (config_file["logger"]=="TensorBoard"):
+        
+        if os.name != "nt" or (("logger" in experiment_settings) and (experiment_settings["logger"]=="TensorBoard")):
             loggers.append(TensorBoardLogger(save_dir=save_dir+"_Tensorboard"))
+            print("logging to tensorboard at :"+str(save_dir+"_Tensorboard"))
             if os.name == "nt":
                 print("###########################################################################################")
                 print("The tensorboard logger causes freezing wen pressing ctr+C on windows.")
@@ -97,7 +99,8 @@ def train(args):
             #The tensorboard logger causes freezing wen pressing ctr+C on windows. Commenting it
             #,
             gradient_clip_val=float(experiment_settings["gradient_clip_val"]),accumulate_grad_batches=int(experiment_settings["accumulate_grad_batches"]),
-            num_sanity_val_steps =experiment_settings["num_sanity_val_steps"]
+            num_sanity_val_steps =experiment_settings["num_sanity_val_steps"],
+            overfit_batches=experiment_settings["overfit_batches"]
 
 
         )

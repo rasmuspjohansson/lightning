@@ -17,9 +17,9 @@ class Lightning_module(LightningModule):
         self.dataset = dataset
         self.model = model
         #We use torchmetrics accuracy object for keeping track of the accuracies for the different divisions of the dataset(https://torchmetrics.readthedocs.io/en/stable/classification/accuracy.html)
-        self.val_accuracy = Accuracy(task="multiclass", num_classes=dataset.n_classes,mdmc_average ="global",ignore_index=self.args["ignore_index"])
-        self.test_accuracy = Accuracy(task="multiclass", num_classes=dataset.n_classes,mdmc_average="global",ignore_index=self.args["ignore_index"])
-        self.train_accuracy = Accuracy(task="multiclass", num_classes=dataset.n_classes,mdmc_average="global",ignore_index=self.args["ignore_index"])
+        self.val_accuracy = Accuracy(task="multiclass", num_classes=dataset.n_classes,multidim_average ="global",ignore_index=self.args["ignore_index"])
+        self.test_accuracy = Accuracy(task="multiclass", num_classes=dataset.n_classes,multidim_average="global",ignore_index=self.args["ignore_index"])
+        self.train_accuracy = Accuracy(task="multiclass", num_classes=dataset.n_classes,multidim_average="global",ignore_index=self.args["ignore_index"])
         if self.args["loss"] == "cross_entropy":
            #this loss is used when training semantic segmentation
            self.loss = torch.nn.CrossEntropyLoss(ignore_index=self.args["ignore_index"],label_smoothing=self.args["label_smoothing"])
@@ -80,6 +80,15 @@ class Lightning_module(LightningModule):
 
         self.log("train_loss", loss, prog_bar=True)
         self.log("train_acc",accuracy , prog_bar=True)#
+
+        cur_lr = self.trainer.optimizers[0].param_groups[0]['lr']
+        #log current learning rate to progress barr
+        #it is logged to csv file with the separate 'LearningRateMonitor'
+        self.log("lr", cur_lr, prog_bar=True, on_step=True)
+
+
+
+
 
         #log how many epochs we have finnished (e.g 1.25 epochs) so we can use this as x axis when plotting
         self.epochs_done_as_float = self.current_epoch+ (batch_idx/self.trainer.num_training_batches)
@@ -194,7 +203,7 @@ class Lightning_module(LightningModule):
 
         print(self.args["learning_rate_schedule"])
         print(self.args["learning_rate_schedule"]["name"])
-        if self.args["learning_rate_schedule"] == "fit_one_cykle":
+        if self.args["learning_rate_schedule"]["name"] == "fit_one_cykle":
             #https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html#torch.optim.lr_scheduler.OneCycleLR
             #steps per epoch needs to be calculated based on the size of the training set and batch size
             pct_start=0.1
@@ -205,7 +214,7 @@ class Lightning_module(LightningModule):
 
             scheduler = torch.optim.lr_scheduler.OneCycleLR( optimizer, max_lr=self.args["lr"], total_steps=self.trainer.estimated_stepping_batches)
             #torch.optim.lr_scheduler.OneCycleLR(optimizer, 0.01,total_steps=total_steps , pct_start=pct_start, anneal_strategy='cos', cycle_momentum=True, base_momentum=0.85, max_momentum=0.95, div_factor=25.0, final_div_factor=10000.0, three_phase=False, last_epoch=- 1, verbose=False)
-        elif self.args["learning_rate_schedule"] == "exponential":
+        elif self.args["learning_rate_schedule"]["name"] == "exponential":
             print("steps_per_epoch:"+str(steps_per_epoch))
             print("total_steps:"+str(total_steps))
 
