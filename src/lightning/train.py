@@ -100,7 +100,9 @@ def train(args):
             #,
             gradient_clip_val=float(experiment_settings["gradient_clip_val"]),accumulate_grad_batches=int(experiment_settings["accumulate_grad_batches"]),
             num_sanity_val_steps =experiment_settings["num_sanity_val_steps"],
-            overfit_batches=experiment_settings["overfit_batches"]
+            overfit_batches=experiment_settings["overfit_batches"],
+            #if we train on a debug dataset we want to be able to logg training accuracy for every epoch!
+            log_every_n_steps = min(50,lightning_object.steps_per_epoch-1)
 
 
         )
