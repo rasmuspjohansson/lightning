@@ -212,7 +212,7 @@ class Lightning_module(LightningModule):
             print("total_steps:"+str(total_steps))
             print("should reach maximum Lr at step : "+str(pct_start*total_steps))
 
-            scheduler = torch.optim.lr_scheduler.OneCycleLR( optimizer, max_lr=self.args["lr"], total_steps=self.trainer.estimated_stepping_batches)
+            scheduler = torch.optim.lr_scheduler.OneCycleLR( optimizer, max_lr=self.args["lr"], total_steps=total_steps) #self.trainer.estimated_stepping_batches)
             #torch.optim.lr_scheduler.OneCycleLR(optimizer, 0.01,total_steps=total_steps , pct_start=pct_start, anneal_strategy='cos', cycle_momentum=True, base_momentum=0.85, max_momentum=0.95, div_factor=25.0, final_div_factor=10000.0, three_phase=False, last_epoch=- 1, verbose=False)
         elif self.args["learning_rate_schedule"]["name"] == "exponential":
             print("steps_per_epoch:"+str(steps_per_epoch))
