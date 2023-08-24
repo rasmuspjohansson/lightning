@@ -30,10 +30,7 @@ def save_image_to_disk(input):
     return input
 
 def get_dataset(args):
-    if args["path_dataset"]:
-        path_dataset = args["path_dataset"]
-    else:
-        path_dataset = os.environ.get("PATH_DATASETS", ".")
+    path_dataset = args["path_dataset"]
 
     if "mnist" == args["dataset"]:
         return Mnist(batch_size=args["batchsize"],data_dir=path_dataset)
@@ -131,6 +128,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                 ])
 
     def open_data(self,path):
+        print("opening data path :"+str(path))
         """
         Open all differetn datasources and stack them ontop of each other to a single multichannel image
         """
@@ -206,6 +204,9 @@ class Custom_semantic_segmentation_dataset():
     def __init__(self,data_dir,args):
         self.batch_size = args["batchsize"]
         label_dir = args["path_labels"]
+
+        label_dir_validation = args["path_validation_labels"]
+
         data_sources = args["data_sources"]
         all_txt =args["all_txt"]
         valid_txt = args["valid_txt"]
@@ -213,14 +214,15 @@ class Custom_semantic_segmentation_dataset():
         self.args= args
 
         self.data_dir =pathlib.Path(data_dir)
+        self.validation_data_dir = pathlib.Path(args["path_validation_dataset"])
         self.n_classes = 12
 
         self.image_paths_all = self.get_paths(self.data_dir,all_txt)
-        self.image_paths_valid = self.get_paths(self.data_dir,valid_txt)
+        self.image_paths_valid = self.get_paths(self.validation_data_dir,valid_txt)
         self.image_paths_train = self.get_paths(self.data_dir,train_txt)
         if label_dir:
             self.label_paths_train= self.get_label_paths(label_dir,self.image_paths_train)
-            self.label_paths_valid = self.get_label_paths(label_dir, self.image_paths_valid)
+            self.label_paths_valid = self.get_label_paths(label_dir_validation, self.image_paths_valid)
             self.label_paths_all = self.get_label_paths(label_dir, self.image_paths_all)
         else:
             self.label_paths_train = False
