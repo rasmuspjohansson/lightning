@@ -102,9 +102,7 @@ def train(args):
             num_sanity_val_steps =experiment_settings["num_sanity_val_steps"],
             overfit_batches=experiment_settings["overfit_batches"],
             #if we train on a debug dataset we want to be able to logg training accuracy for every epoch!
-            log_every_n_steps = int(experiment_settings["log_every_n_steps"]))
-
-
+            log_every_n_steps = int(experiment_settings["log_every_n_steps"])
         )
         #if experiment_settings["state_dict_path_load"]:
         #    lightning_object.load_state_dict(torch.load(experiment_settings["state_dict_path_load"]))

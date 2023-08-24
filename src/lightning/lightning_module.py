@@ -29,7 +29,7 @@ class Lightning_module(LightningModule):
         else:
            sys.exit("please provide a valid loss")
 
-        
+
 
 
 
