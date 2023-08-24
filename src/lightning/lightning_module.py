@@ -29,7 +29,7 @@ class Lightning_module(LightningModule):
         else:
            sys.exit("please provide a valid loss")
 
-        self.steps_per_epoch =len(self.dataset.dataset_train)//(self.args["batchsize"]*self.args["accumulate_grad_batches"])
+        
 
 
 
@@ -195,11 +195,11 @@ class Lightning_module(LightningModule):
             sys.exit("NO VALID OPTIMIZER")
 
 
-        #steps_per_epoch =len(self.dataset.dataset_train)//(self.args["batchsize"]*self.args["accumulate_grad_batches"])
-        total_steps = self.steps_per_epoch*self.args["epochs"]
+        steps_per_epoch =len(self.dataset.dataset_train)//(self.args["batchsize"]*self.args["accumulate_grad_batches"])
+        total_steps = steps_per_epoch*self.args["epochs"]
         print("samples in trainingset:"+str(len(self.dataset.dataset_train)))
         print("batchsize times accumulate_grad_batches:"+str((self.args["batchsize"] * self.args["accumulate_grad_batches"])))
-        print("steps_per_epoch:"+str(self.steps_per_epoch))
+        print("steps_per_epoch:"+str(steps_per_epoch))
         print("total_steps:" + str(total_steps))
 
 
@@ -210,14 +210,14 @@ class Lightning_module(LightningModule):
             #steps per epoch needs to be calculated based on the size of the training set and batch size
             pct_start=0.1
 
-            print("steps_per_epoch:"+str(self.steps_per_epoch))
+            print("steps_per_epoch:"+str(steps_per_epoch))
             print("total_steps:"+str(total_steps))
             print("should reach maximum Lr at step : "+str(pct_start*total_steps))
 
             scheduler = torch.optim.lr_scheduler.OneCycleLR( optimizer, max_lr=self.args["lr"], total_steps=total_steps) #self.trainer.estimated_stepping_batches)
             #torch.optim.lr_scheduler.OneCycleLR(optimizer, 0.01,total_steps=total_steps , pct_start=pct_start, anneal_strategy='cos', cycle_momentum=True, base_momentum=0.85, max_momentum=0.95, div_factor=25.0, final_div_factor=10000.0, three_phase=False, last_epoch=- 1, verbose=False)
         elif self.args["learning_rate_schedule"]["name"] == "exponential":
-            print("steps_per_epoch:"+str(self.steps_per_epoch))
+            print("steps_per_epoch:"+str(steps_per_epoch))
             print("total_steps:"+str(total_steps))
 
             scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer,
@@ -225,7 +225,7 @@ class Lightning_module(LightningModule):
                                                                verbose=False)
         elif self.args["learning_rate_schedule"]["name"] == "LinearWarmupCosineAnnealingLR":
             print("WARNING! this lr shedular might be incompatible with pytorch2")
-            print("steps_per_epoch:"+str(self.steps_per_epoch))
+            print("steps_per_epoch:"+str(steps_per_epoch))
             print("total_steps:"+str(total_steps))
 
             scheduler = {'sheduler':LinearWarmupCosineAnnealingLR(optimizer, warmup_epochs=self.args["learning_rate_schedule"]["warmup_epochs"],max_epochs=self.args["epochs"],  warmup_start_lr=0.0, eta_min=0.0, last_epoch=- 1),
@@ -234,7 +234,7 @@ class Lightning_module(LightningModule):
 
         elif self.args["learning_rate_schedule"]["name"] == "CosineAnnealingLR":
             print("make sure to do a warmup before cosineAnealingLR ! ")
-            print("steps_per_epoch:"+str(self.steps_per_epoch))
+            print("steps_per_epoch:"+str(steps_per_epoch))
             print("total_steps:"+str(total_steps))
 
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=total_steps, eta_min=0, last_epoch=- 1, verbose=False)

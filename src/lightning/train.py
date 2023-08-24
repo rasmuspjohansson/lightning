@@ -102,7 +102,7 @@ def train(args):
             num_sanity_val_steps =experiment_settings["num_sanity_val_steps"],
             overfit_batches=experiment_settings["overfit_batches"],
             #if we train on a debug dataset we want to be able to logg training accuracy for every epoch!
-            log_every_n_steps = min(50,lightning_object.steps_per_epoch-1)
+            log_every_n_steps = int(experiment_settings["log_every_n_steps"]))
 
 
         )
