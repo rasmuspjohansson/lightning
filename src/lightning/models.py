@@ -41,7 +41,7 @@ def get_model(args,n_classes):
     elif args["model"] == "fcn":
         return Fcn_mobilenet_v3(n_classes)
     elif args["model"] == "unet":
-        return Unet(n_classes,args["n_input_channels"])
+        return Unet(n_classes,n_input_channels= len(np.array(args["channels"])).flatten())
     elif args["model"] == "unet":
         return Fcn_mobilenet_v3(n_classes)
     else:
