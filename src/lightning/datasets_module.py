@@ -188,6 +188,14 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
             (img, label)=(np.array(img),np.array(label))
             #cross entropy loss wants a int64 as input
             label = np.array(label,dtype=np.int64)
+
+            #remapping the labels everytime the iamge loads is inefficient but should be ok when using several worker threads
+            if "remapping_labels" in self.args:
+                for original_label in self.args["remapping_labels"]:
+                    new_label = self.args["remapping_labels"][original_label]
+                    mask = label==int(original_label)
+                    label[mask]=int(new_label)
+
             return (img,label)
 
     def __len__(self): return len(self.files)
