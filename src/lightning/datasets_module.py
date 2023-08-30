@@ -56,6 +56,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
     def __init__(self,files,labels,args,always_apply = False,collect_statistics = False):
         """
         @ arg files: a list of paths to the images in the dataset
+        @ arg collect_statistics: Set this to True in order to collect statistics of means and stds , these values cna later be used with A.augmentations.transforms.Normalize
 
         assumes the following folder structure
         a_dataset/images/im_x.tif
@@ -187,6 +188,14 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
             (img, label)=(np.array(img),np.array(label))
             #cross entropy loss wants a int64 as input
             label = np.array(label,dtype=np.int64)
+
+            #remapping the labels everytime the iamge loads is inefficient but should be ok when using several worker threads
+            if "remapping_labels" in self.args:
+                for original_label in self.args["remapping_labels"]:
+                    new_label = self.args["remapping_labels"][original_label]
+                    mask = label==int(original_label)
+                    label[mask]=int(new_label)
+
             return (img,label)
 
     def __len__(self): return len(self.files)
@@ -270,7 +279,11 @@ class Custom_semantic_segmentation_dataset():
         if stage == "fit" or stage is None:
 
             self.dataset_train= Semantic_segmentation_pytorch_dataset(files=self.image_paths_train,labels=self.label_paths_train,args=self.args)
-            self.dataset_val = Semantic_segmentation_pytorch_dataset(files=self.image_paths_valid,labels=self.label_paths_valid,args=self.args)
+            #We do not want to use ane agumentations when validating the models performance
+            args_without_augmentation = self.args.copy()
+            args_without_augmentation["transforms"]= False
+            self.dataset_val = Semantic_segmentation_pytorch_dataset(files=self.image_paths_valid,labels=self.label_paths_valid,args=args_without_augmentation)
+
             self.dataset_all = Semantic_segmentation_pytorch_dataset(files=self.image_paths_all,labels=self.label_paths_all,args=self.args)
 
 
