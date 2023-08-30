@@ -128,7 +128,6 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                 ])
 
     def open_data(self,path):
-        print("opening data path :"+str(path))
         """
         Open all differetn datasources and stack them ontop of each other to a single multichannel image
         """
