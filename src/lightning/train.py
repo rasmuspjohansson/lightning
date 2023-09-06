@@ -52,7 +52,7 @@ def train(args):
         #We want to save the weights every X hours
         checkpoint_callback1 = ModelCheckpoint(dirpath=save_dir+"/"+"interval_checkpoints",train_time_interval=datetime.timedelta(hours=1.0),filename=experment_name+"-{epoch:02d}-{val_loss:.2f}")
         #We want to save the weight every epoch (save_top_k=-1 makes sure that every checkpoint is kept on disk)
-        checkpoint_callback2 = ModelCheckpoint(dirpath=save_dir+"/"+"epoch_checkpoints", every_n_epochs=1,filename=experment_name+"-{epoch:02d}-{val_loss:.2f}",save_top_k=-1)
+        checkpoint_callback2 = ModelCheckpoint(dirpath=save_dir+"/"+"epoch_checkpoints", every_n_epochs=1,filename=experment_name+"-{epoch:02d}",save_top_k=-1)
         # saves top-K checkpoints based on "val_loss" metric
         checkpoint_callback3 = ModelCheckpoint(
             save_top_k=3,
