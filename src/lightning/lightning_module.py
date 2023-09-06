@@ -243,7 +243,7 @@ class Lightning_module(LightningModule):
             scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.0000000000000001, end_factor=1.0, total_iters=total_steps, last_epoch=- 1, verbose=False)
 
 
-        elif self.args["learning_rate_schedule"] == "no_scheduler":
+        elif self.args["learning_rate_schedule"]["name"] == "no_scheduler":
             return optimizer
         else:
             sys.exit("NO VALID LR_SCHEDULE")
