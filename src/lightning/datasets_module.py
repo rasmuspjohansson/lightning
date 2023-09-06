@@ -53,10 +53,10 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
     A pure pytorch dataset for custom semantic segmentation tasks
 
     """
-    def __init__(self,files,labels,args,always_apply = False,collect_statistics = False):
+    def __init__(self,files,labels,args,always_apply = False):
         """
         @ arg files: a list of paths to the images in the dataset
-        @ arg collect_statistics: Set this to True in order to collect statistics of means and stds , these values cna later be used with A.augmentations.transforms.Normalize
+
 
         assumes the following folder structure
         a_dataset/images/im_x.tif
@@ -71,7 +71,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
 
         # Collecting means and stds from the raw data
         # We can use these in the config file for normalization later
-        self.collect_statistics = collect_statistics
+        self.collect_statistics = "collect_statistics" in args and args["collect_statistics"]
         self.collected_means=[]
         self.collected_stds = []
 
