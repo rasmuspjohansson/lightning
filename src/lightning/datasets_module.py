@@ -14,7 +14,7 @@ from datasets.utils.file_utils import get_datasets_user_agent
 from huggingface_hub import cached_download, hf_hub_url
 import json
 import rasterio
-
+import data_preprocessing
 import albumentations as A
 
 
@@ -136,7 +136,10 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         #print("data_sources:"+str(data_sources))
 
         for index,data_source in enumerate(data_sources):
-            new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read()
+            if data_source =="DTM":
+                new_as_array = data_preprocessing.get_difference_from_local_mean_of_lidar_measurement(path.parent.parent / pathlib.Path(data_source) / path.name)
+            else:
+                new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read()
             new_as_array = new_as_array[self.args["channels"][index]]
             if index ==0:
                 as_array = new_as_array
