@@ -23,10 +23,9 @@ def get_difference_from_local_mean_of_lidar_measurement(image_path):
     min = difference_im.flatten().min()
     max = difference_im.flatten().max()
 
-    normalized_difference = np.array(255*((difference_im-min)/(max-min)),dtype=np.uint8)
-    difference_im= Image.fromarray(normalized_difference)
+    normalized_difference = np.expand_dims(np.array(255*((difference_im-min)/((max-min)+0.0000000001)),dtype=np.uint8),axis=0)
 
-    return difference_im
+    return  normalized_difference
 
 
 
@@ -47,6 +46,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     image_path = pathlib.Path(args.lidar_image)
-    difference_im = get_difference_from_local_mean_of_lidar_measurement(image_path)
+    difference_im = Image.fromarray(get_difference_from_local_mean_of_lidar_measurement(image_path))
     plt.imshow(difference_im, interpolation='nearest')
     plt.show()
