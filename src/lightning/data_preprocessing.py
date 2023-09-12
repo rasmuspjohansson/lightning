@@ -19,11 +19,13 @@ def get_difference_from_local_mean_of_lidar_measurement(image_path):
     blurr_img = ndimage.gaussian_filter(orig_img, sigma=(5, 5), order=0)
 
     #difference between negative slope and positive slope
-    difference_im = np.array(orig_img)- np.array(blurr_img)
+    difference_im = abs(np.array(orig_img)- np.array(blurr_img))
     min = difference_im.flatten().min()
     max = difference_im.flatten().max()
 
+
     normalized_difference = np.expand_dims(np.array(255*((difference_im-min)/((max-min)+0.0000000001)),dtype=np.uint8),axis=0)
+    difference_im= Image.fromarray(normalized_difference)
 
     return  normalized_difference
 
