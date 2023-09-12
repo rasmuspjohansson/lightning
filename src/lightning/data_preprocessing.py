@@ -25,9 +25,9 @@ def get_difference_from_local_mean_of_lidar_measurement(image_path):
 
 
     normalized_difference = np.expand_dims(np.array(255*((difference_im-min)/((max-min)+0.0000000001)),dtype=np.uint8),axis=0)
-    difference_im= Image.fromarray(normalized_difference)
+    #difference_im= Image.fromarray(normalized_difference)
 
-    return  normalized_difference
+    return normalized_difference  #difference_im
 
 
 
