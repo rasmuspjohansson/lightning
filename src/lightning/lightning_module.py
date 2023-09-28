@@ -208,13 +208,13 @@ class Lightning_module(LightningModule):
         if self.args["learning_rate_schedule"]["name"] == "fit_one_cykle":
             #https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html#torch.optim.lr_scheduler.OneCycleLR
             #steps per epoch needs to be calculated based on the size of the training set and batch size
-            pct_start=0.1
+            pct_start= self.args["learning_rate_schedule"]["pct_start"]
 
             print("steps_per_epoch:"+str(steps_per_epoch))
             print("total_steps:"+str(total_steps))
             print("should reach maximum Lr at step : "+str(pct_start*total_steps))
 
-            scheduler = torch.optim.lr_scheduler.OneCycleLR( optimizer, max_lr=self.args["lr"], total_steps=total_steps) #self.trainer.estimated_stepping_batches)
+            scheduler = torch.optim.lr_scheduler.OneCycleLR( optimizer, max_lr=self.args["lr"], total_steps=total_steps, pct_start=pct_start) #self.trainer.estimated_stepping_batches)
             #torch.optim.lr_scheduler.OneCycleLR(optimizer, 0.01,total_steps=total_steps , pct_start=pct_start, anneal_strategy='cos', cycle_momentum=True, base_momentum=0.85, max_momentum=0.95, div_factor=25.0, final_div_factor=10000.0, three_phase=False, last_epoch=- 1, verbose=False)
         elif self.args["learning_rate_schedule"]["name"] == "exponential":
             print("steps_per_epoch:"+str(steps_per_epoch))
