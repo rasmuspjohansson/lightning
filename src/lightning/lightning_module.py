@@ -63,7 +63,7 @@ class Lightning_module(LightningModule):
         #    loss = F.nll_loss(logits, y)
         preds = torch.argmax(logits, dim=1)
 
-        if self.args["print_label_and_prediction_histogram"]:
+        if "print_label_and_prediction_histogram" in self.args and self.args["print_label_and_prediction_histogram"]:
             y_numpy = y.cpu()
             preds_numpy = preds.cpu()
             for i in range(y_numpy.shape[0]):

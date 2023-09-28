@@ -36,7 +36,7 @@ def train(args):
 
         #It is important to verify that the iamges look good after augmentations (no artifacts or anything else that causes the data to look very differetn than the un-augmetnted dat)
 
-        if experiment_settings["nr_of_images_to_visualize"] >0:
+        if "nr_of_images_to_visualize" in experiment_settings and experiment_settings["nr_of_images_to_visualize"] >0:
             visualize.visualize_dataset(dataset,experiment_settings)
 
         model = models.get_model(experiment_settings,dataset.n_classes)
