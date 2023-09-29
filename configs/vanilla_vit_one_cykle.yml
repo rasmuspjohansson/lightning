@@ -33,5 +33,25 @@ resume_training: False
 experment_name: "vanilla ViT one cykle on imagenet1k"
 loss: cross_entropy
 #print out when training
-
-
+#samples in trainingset:1281167
+#batchsize times accumulate_grad_batches:4096
+#steps_per_epoch:312
+#total_steps:9984
+#{'name': 'fit_one_cykle', 'pct_start': 0.106}
+#fit_one_cykle
+#steps_per_epoch:312
+#total_steps:9984
+#should reach maximum Lr at step : 1058.3039999999999
+#
+#  | Name           | Type               | Params
+#------------------------------------------------------
+#0 | model          | Vit                | 88.2 M
+#1 | val_accuracy   | MulticlassAccuracy | 0
+#2 | test_accuracy  | MulticlassAccuracy | 0
+#3 | train_accuracy | MulticlassAccuracy | 0
+#4 | loss           | CrossEntropyLoss   | 0
+#------------------------------------------------------
+#88.2 M    Trainable params
+#0         Non-trainable params
+#88.2 M    Total params
+#352.897   Total estimated model params size (MB)
