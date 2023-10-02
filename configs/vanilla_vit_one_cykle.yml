@@ -11,7 +11,7 @@ ignore_index: -100
 label_smoothing: 0.0001
 #in  https://github.com/google-research/vision_transformer/issues/89 they propose batchsize of 4096 ==(256*16) and warmup for 10000 steps. (1281167 images / 4096 == 312 steps per epoch  --> 10000 steps == 32 epochs)
 #with a planned trainingtime of 300 epochs pct_start == 32/300 == 0.106 
-epochs: 32
+epochs: 300
 
 lr: 0.001
 learning_rate_schedule:
