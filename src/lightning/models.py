@@ -5,6 +5,8 @@ import numpy as np
 import torchvision
 import segmentation_models_pytorch as smp
 import sys
+import locally_connected
+import local_vision_transformer
 
 
 
