@@ -39,7 +39,7 @@ def get_model(args,n_classes):
     elif args["model"] == "vit":
         return Vit(n_classes)
     elif args["model"] == "vit_local":
-        return Vit_local(n_classes)
+        return Vit_local(n_classes,keep_nr_of_paramters_equal=args["keep_nr_of_paramters_equal"])
     elif args["model"] == "fcn":
         return Fcn_mobilenet_v3(n_classes)
     elif args["model"] == "unet":
@@ -92,9 +92,9 @@ class Vit_local(nn.Module):
     vit_b_32 is used becaus 'how to train your vit ?' recomends  usig large models with patchsize 32 instead of smaller models with smaller patch sizes
 
     """
-    def __init__(self,n_classes):
+    def __init__(self,n_classes,keep_nr_of_paramters_equal):
         super(Vit_local, self).__init__()
-        self.model = local_vision_transformer.vit_b_32(num_classes=n_classes)
+        self.model = local_vision_transformer.vit_b_32(num_classes=n_classes,keep_nr_of_paramters_equal=keep_nr_of_paramters_equal)
     def forward(self, x):
         #print("vit input 1")
         #print(type(x))
