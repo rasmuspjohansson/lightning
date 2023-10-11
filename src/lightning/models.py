@@ -43,9 +43,8 @@ def get_model(args,n_classes):
     elif args["model"] == "fcn":
         return Fcn_mobilenet_v3(n_classes)
     elif args["model"] == "unet":
-        return Unet(n_classes,n_input_channels= len(args["means"]))
-    elif args["model"] == "unet":
-        return Fcn_mobilenet_v3(n_classes)
+        return Unet(n_classes,n_input_channels= len(args["means"]),backbone= args["backbone"])
+
     else:
         sys.exit("no known model defined!")
 class Unet(nn.Module):
@@ -53,10 +52,10 @@ class Unet(nn.Module):
     a thin wrapper around segmentation models version of unet
     https://github.com/qubvel/segmentation_models.pytorch
     """
-    def __init__(self,n_classes,n_input_channels):
+    def __init__(self,n_classes,n_input_channels,backbone):
         super(Unet, self).__init__()
         self.input_channels = n_input_channels
-        self.model = smp.Unet('resnet34', encoder_weights='imagenet',classes=n_classes,in_channels=self.input_channels)
+        self.model = smp.Unet(backbone, encoder_weights='imagenet',classes=n_classes,in_channels=self.input_channels)
     def forward(self, x):
         
         x = self.model.forward(x)

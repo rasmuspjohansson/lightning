@@ -14,7 +14,7 @@ from datasets.utils.file_utils import get_datasets_user_agent
 from huggingface_hub import cached_download, hf_hub_url
 import json
 import rasterio
-
+import data_preprocessing
 import albumentations as A
 
 
@@ -53,10 +53,10 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
     A pure pytorch dataset for custom semantic segmentation tasks
 
     """
-    def __init__(self,files,labels,args,always_apply = False,collect_statistics = False):
+    def __init__(self,files,labels,args,always_apply = False):
         """
         @ arg files: a list of paths to the images in the dataset
-        @ arg collect_statistics: Set this to True in order to collect statistics of means and stds , these values cna later be used with A.augmentations.transforms.Normalize
+
 
         assumes the following folder structure
         a_dataset/images/im_x.tif
@@ -71,7 +71,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
 
         # Collecting means and stds from the raw data
         # We can use these in the config file for normalization later
-        self.collect_statistics = collect_statistics
+        self.collect_statistics = "collect_statistics" in args and args["collect_statistics"]
         self.collected_means=[]
         self.collected_stds = []
 
@@ -79,6 +79,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         if self.args["transforms"]:
             self.transform = A.Compose(
                 [
+                    
                     A.augmentations.geometric.transforms.PadIfNeeded(min_height=1024, min_width=1024),
                     A.augmentations.geometric.transforms.ShiftScaleRotate(p=0.5,always_apply=always_apply),
 
@@ -92,10 +93,10 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                     A.augmentations.transforms.PixelDropout(dropout_prob=0.01, per_channel=False, drop_value=0, mask_drop_value=None, always_apply=always_apply, p=0.2),
                     A.augmentations.transforms.RandomBrightnessContrast (brightness_limit=0.2, contrast_limit=0.2, brightness_by_max=True,always_apply=always_apply, p=0.5),
                     #expects 3-channel images A.augmentations.transforms.RandomFog(fog_coef_lower=0.3, fog_coef_upper=1, alpha_coef=0.08,always_apply=always_apply, p=0.5),
-                    A.augmentations.transforms.Downscale(scale_min=0.9, scale_max=0.9,p=0.1,always_apply=always_apply),
+                    #A.augmentations.transforms.Downscale(scale_min=0.9, scale_max=0.9,p=0.1,always_apply=always_apply),
 
-                    A.augmentations.transforms.RandomGamma (gamma_limit=(80, 120), eps=None,always_apply=always_apply, p=0.5),
-                    A.augmentations.transforms.RandomGridShuffle(grid=(3, 3),always_apply=always_apply, p=0.2),
+                    #A.augmentations.transforms.RandomGamma (gamma_limit=(80, 120), eps=None,always_apply=always_apply, p=0.5),
+                    #A.augmentations.transforms.RandomGridShuffle(grid=(3, 3),always_apply=always_apply, p=0.2),
                     A.augmentations.transforms.RandomShadow (shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=1, num_shadows_upper=2, shadow_dimension=5,always_apply=always_apply, p=0.5),
                     #expects 3-channel images A.augmentations.transforms.RGBShift(r_shift_limit=20, g_shift_limit=20, b_shift_limit=20,always_apply=always_apply, p=0.5),
                     #cannot reshape array of size 3145728 into shape (1024,1024,4) A.augmentations.transforms.JpegCompression(quality_lower=99, quality_upper=100,always_apply=always_apply, p=0.5),
@@ -136,7 +137,10 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         #print("data_sources:"+str(data_sources))
 
         for index,data_source in enumerate(data_sources):
-            new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read()
+            if data_source =="DTM":
+                new_as_array = data_preprocessing.get_difference_from_local_mean_of_lidar_measurement(path.parent.parent / pathlib.Path(data_source) / path.name)
+            else:
+                new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read()
             new_as_array = new_as_array[self.args["channels"][index]]
             if index ==0:
                 as_array = new_as_array

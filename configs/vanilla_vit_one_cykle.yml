@@ -1,0 +1,57 @@
+---
+model: vit
+dataset: imagenet1k
+path_dataset: False
+optimizer: adam
+# 'exclude the parameters of the LayerNorm for weight decay. 
+#Or you can just turn off weight decay, it usually makes minor difference
+#'https://github.com/lucidrains/vit-pytorch/issues/55
+wd: 0.00
+ignore_index: -100
+label_smoothing: 0.0001
+#in  https://github.com/google-research/vision_transformer/issues/89 they propose batchsize of 4096 ==(256*16) and warmup for 10000 steps. (1281167 images / 4096 == 312 steps per epoch  --> 10000 steps == 32 epochs)
+#with a planned trainingtime of 300 epochs pct_start == 32/300 == 0.106 
+epochs: 300
+
+lr: 0.001
+learning_rate_schedule:
+ name: fit_one_cykle
+ pct_start: 0.106
+batchsize: 128
+accumulate_grad_batches: 32
+#gradient norml clip should be 1. acoridng to 'how to train your vit'
+gradient_clip_val: 1.0
+save_interval: 100
+save_dir: "logs_vanillaViT_one_cykle/"
+val_check_interval: 1
+num_sanity_val_steps: 0
+overfit_batches: False
+log_every_n_steps: 550
+accelerator: auto
+state_dict_path_load: False
+resume_training: False
+experment_name: "vanilla ViT one cykle on imagenet1k"
+loss: cross_entropy
+#print out when training
+#samples in trainingset:1281167
+#batchsize times accumulate_grad_batches:4096
+#steps_per_epoch:312
+#total_steps:9984
+#{'name': 'fit_one_cykle', 'pct_start': 0.106}
+#fit_one_cykle
+#steps_per_epoch:312
+#total_steps:9984
+#should reach maximum Lr at step : 1058.3039999999999
+#
+#  | Name           | Type               | Params
+#------------------------------------------------------
+#0 | model          | Vit                | 88.2 M
+#1 | val_accuracy   | MulticlassAccuracy | 0
+#2 | test_accuracy  | MulticlassAccuracy | 0
+#3 | train_accuracy | MulticlassAccuracy | 0
+#4 | loss           | CrossEntropyLoss   | 0
+#------------------------------------------------------
+#88.2 M    Trainable params
+#0         Non-trainable params
+#88.2 M    Total params
+#352.897   Total estimated model params size (MB)
