@@ -1,6 +1,6 @@
 ---
 model: vit_local
-keep_nr_of_paramters_equal: True
+keep_nr_of_paramters_equal: False
 dataset: imagenet1k
 path_dataset: False
 optimizer: adam

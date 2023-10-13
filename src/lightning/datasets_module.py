@@ -313,7 +313,7 @@ class Scene_parse_150():
     """
     def __init__(self,batch_size,data_dir):
         self.data_dir =data_dir
-        ds = load_dataset("scene_parse_150", split="train[:50]",streaming=False,use_auth_token=True,cache_dir=self.data_dir)
+        ds = load_dataset("scene_parse_150", split="train[:50]",streaming=False,token=True,cache_dir=self.data_dir)
         #Split the dataset’s train split into a train and test set with the train_test_split method:
         ds = ds.train_test_split(test_size=0.2)
         self.train_ds = ds["train"]
@@ -524,7 +524,7 @@ class Pytorch_dataset_huggingface_imagenet_wrapper(torch.utils.data.Dataset):
         """
         self.transform = transform
         self.data_dir = data_dir
-        self.dataset=load_dataset('imagenet-1k', split=split, streaming=False,use_auth_token=True,cache_dir=self.data_dir) #.with_format("torch")
+        self.dataset=load_dataset('imagenet-1k', split=split, streaming=False,token=True,cache_dir=self.data_dir) #.with_format("torch")
 
         # Assign test dataset for use in dataloader(s)
         #if stage == "test" or stage is None:
@@ -621,9 +621,9 @@ class Imagenet1k:
         in pytorchlightning downloading should be done in the 'prepare_data' function.
         This function is meant to be callable from a pytorch lightning 'prepare_data' function
         """
-        load_dataset('imagenet-1k', split='train', streaming=False,use_auth_token=True,cache_dir=self.data_dir)
-        load_dataset('imagenet-1k', split='validation', streaming=False,use_auth_token=True,cache_dir=self.data_dir)
-        load_dataset('imagenet-1k', split='test', streaming=False,use_auth_token=True,cache_dir=self.data_dir)
+        load_dataset('imagenet-1k', split='train', streaming=False,token=True,cache_dir=self.data_dir)
+        load_dataset('imagenet-1k', split='validation', streaming=False,token=True,cache_dir=self.data_dir)
+        load_dataset('imagenet-1k', split='test', streaming=False,token=True,cache_dir=self.data_dir)
 
      
 

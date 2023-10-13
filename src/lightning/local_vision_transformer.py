@@ -311,6 +311,7 @@ def _vision_transformer(
     mlp_dim: int,
     weights: Optional[WeightsEnum],
     progress: bool,
+    keep_nr_of_paramters_equal: bool,
     **kwargs: Any,
 ) -> VisionTransformer:
     if weights is not None:
