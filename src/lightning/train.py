@@ -14,15 +14,11 @@ import numpy as np
 import visualize
 import datetime
 #this gave 0.52 validation accuracy: python train.py --model vit --dataset cifar10 -n localVIT100epochADAM --learning_rate_schedule NONE -o adam --lr 0.001 --loss cross_entropy. I need to get https://github.com/kentaroy47/vision-transformers-cifar10 to run and modify it with locally conected layer. 
- 
-
 
 
 import yaml
 
 def train(args):
-
-    
     for config_file in args.config:
         with open(config_file, 'r') as f:
             experiment_settings =  yaml.safe_load(f)

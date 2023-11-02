@@ -74,6 +74,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         self.collect_statistics = "collect_statistics" in args and args["collect_statistics"]
         self.collected_means=[]
         self.collected_stds = []
+        #input([json.loads(elem) for elem in self.args["augmentations"]["channel_value_augmentation"]["addition_ranges"]])
 
 
         if self.args["transforms"]:
@@ -90,14 +91,17 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                     A.HorizontalFlip(p=0.5,always_apply=always_apply),
                     #expects 1-channel or 3-channel images. A.augmentations.transforms.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, p=0.5,always_apply=always_apply),
                     #must be RGB A.augmentations.transforms.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5),p=0.5,always_apply=always_apply),
-                    A.augmentations.transforms.PixelDropout(dropout_prob=0.01, per_channel=False, drop_value=0, mask_drop_value=None, always_apply=always_apply, p=0.2),
+                    A.augmentations.transforms.PixelDropout(dropout_prob=0.005, per_channel=False, drop_value=0, mask_drop_value=None, always_apply=always_apply, p=0.1),
                     A.augmentations.transforms.RandomBrightnessContrast (brightness_limit=0.2, contrast_limit=0.2, brightness_by_max=True,always_apply=always_apply, p=0.5),
                     #expects 3-channel images A.augmentations.transforms.RandomFog(fog_coef_lower=0.3, fog_coef_upper=1, alpha_coef=0.08,always_apply=always_apply, p=0.5),
                     #A.augmentations.transforms.Downscale(scale_min=0.9, scale_max=0.9,p=0.1,always_apply=always_apply),
 
                     #A.augmentations.transforms.RandomGamma (gamma_limit=(80, 120), eps=None,always_apply=always_apply, p=0.5),
                     #A.augmentations.transforms.RandomGridShuffle(grid=(3, 3),always_apply=always_apply, p=0.2),
-                    A.augmentations.transforms.RandomShadow (shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=1, num_shadows_upper=2, shadow_dimension=5,always_apply=always_apply, p=0.5),
+                    A.augmentations.transforms.RandomShadow (shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=self.args["augmentations"]["random_shadow"]["num_shadows_lower"], num_shadows_upper=self.args["augmentations"]["random_shadow"]["num_shadows_upper"], shadow_dimension=5,always_apply=always_apply, p=0.5),
+                    A.augmentations.transforms.ChannelValueAugmentation (multiplicative_ranges=self.args["augmentations"]["channel_value_augmentation"]["multiplicative_ranges"],addition_ranges=self.args["augmentations"]["channel_value_augmentation"]["addition_ranges"],always_apply=always_apply, p=0.5),	
+
+
                     #expects 3-channel images A.augmentations.transforms.RGBShift(r_shift_limit=20, g_shift_limit=20, b_shift_limit=20,always_apply=always_apply, p=0.5),
                     #cannot reshape array of size 3145728 into shape (1024,1024,4) A.augmentations.transforms.JpegCompression(quality_lower=99, quality_upper=100,always_apply=always_apply, p=0.5),
 
@@ -121,7 +125,6 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
 
                 ])
         else:
-
             self.transform = A.Compose(
                 [
                     A.augmentations.geometric.transforms.PadIfNeeded(min_height=1024, min_width=1024),
@@ -137,10 +140,22 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         #print("data_sources:"+str(data_sources))
 
         for index,data_source in enumerate(data_sources):
-            if data_source =="DTM":
-                new_as_array = data_preprocessing.get_difference_from_local_mean_of_lidar_measurement(path.parent.parent / pathlib.Path(data_source) / path.name)
+            if data_source in ["DTM","DSM"]:
+                simple_normalization = True
+                if simple_normalization:
+                    #stretch values so min ==0 and max == 255
+                    #we now get a height map . To get slopes the model can do a simple convolution with random filter.
+                    new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read()
+                    (min,max) = (new_as_array.min(),new_as_array.max())
+                    #avoid divide by 0 by addign small number to divisor
+                    new_as_array = (new_as_array-min)/(max-min+0.00000001)*255
+                else:
+                    #subtract the local mean before stretching the  values between 0 and 255 (equalizes a long slope so that the data in one end looks simular to the data in the other end of the slope)
+                    #this option is dangerous as it risks removing info about the direction of a slope. 
+                    new_as_array = data_preprocessing.get_difference_from_local_mean_of_lidar_measurement(path.parent.parent / pathlib.Path(data_source) / path.name)
             else:
                 new_as_array = rasterio.open(path.parent.parent / pathlib.Path(data_source) / path.name).read()
+            #extract the channels we are interested in
             new_as_array = new_as_array[self.args["channels"][index]]
             if index ==0:
                 as_array = new_as_array

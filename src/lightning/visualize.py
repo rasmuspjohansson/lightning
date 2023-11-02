@@ -59,12 +59,15 @@ def visualize_dataset(dataset,experiment_settings,n_classes=10):
     showing the data as it looks after the transforms have been aplied
     """
 
-    def simple_normalize(data,info):
-        data = np.array(255 * ((data - data.min()) / (data.max() - data.min())), dtype=np.uint8)
+    def simple_normalize(data):
+        print("input simple normalize:"+str([np.min(data),np.median(data),np.max(data)]))
+        data = np.array(255. * ((data - data.min()) / (data.max() - data.min())), dtype=np.uint8)
+        print("output simple normalize:"+str([np.min(data),np.median(data),np.max(data)]))
         return data
     dataset.setup()
     #end matplotlib
     for sample_idx in range(experiment_settings["nr_of_images_to_visualize"]):
+        print("sample_idx: "+str(sample_idx))
         for augmetnation_examples in range(experiment_settings["nr_of_transformed_versions_to_visualize"]):
 
             imglabel = dataset.dataset_train[sample_idx]
@@ -76,10 +79,10 @@ def visualize_dataset(dataset,experiment_settings,n_classes=10):
                 label = None
 
             channels_to_show = [0, 1, 2]
-            channelsdata = simple_normalize(img[channels_to_show],info="rgbdata")
+            channelsdata = simple_normalize(img[channels_to_show])
             # showing first 3 channels
-            rgb_img = Image.fromarray(channelsdata.transpose([1, 2, 0]), 'RGB')
-            #label_img = Image.fromarray(simple_normalize(label,info="label"))
+            #rgb_img = Image.fromarray(channelsdata.transpose([1, 2, 0]), 'RGB')
+            #label_img = Image.fromarray(simple_normalize(label)
             #visualizing the input by unnormalizing it
             means= np.array(experiment_settings["means"])[channels_to_show]
             stds= np.array(experiment_settings["stds"])[channels_to_show]
@@ -91,28 +94,21 @@ def visualize_dataset(dataset,experiment_settings,n_classes=10):
             raw_input = np.array(Image.open(filename))
 
 
+            # showing the first color image and label to visualize how the transform changes the input
+            print("raw_input of shape "+str(raw_input.shape))
+            print(raw_input)
+            print("un_normalized")
+            print(un_normalized)
             visualize_input_output_and_label(raw_input=raw_input,un_normalized_transformed_input=un_normalized,infered_prediction=None,label=label,file_name=filename)
 
-            """
-
-            fig, axes = plt.subplots(1, 2)
-            axes[0].imshow(label,cmap="tab20",vmin=0,interpolation='nearest', vmax=n_classes)
-            axes[0].set_title('label_img')
-            axes[1].imshow(un_normalized)
-            axes[1].set_title('rgb after transforms and un_normalization')
-            plt.show()
-            
-            """
-            # showing all channels one by one?
-            show_all_channels= False
-            if show_all_channels:
-                for channel in range(len(experiment_settings["means"])):
-                    normalized = un_normalized = un_normalize(img[channel], np.array(experiment_settings["means"][channel]), np.array(experiment_settings["stds"][channel]))
-                    Image.fromarray(normalized).show()
-           
 
 
-
-
+            # showing the channels one by one
+            if "show_channels" in experiment_settings:
+                for channel in experiment_settings["show_channels"]:
+                    un_normalized = un_normalize(img[channel], np.array(experiment_settings["means"][channel]), np.array(experiment_settings["stds"][channel]))
+                    print("visualization of normalized data")
+                    print("data max:"+str(np.max(img[channel])))
+                    Image.fromarray(simple_normalize(img[channel])).save("/mnt/T/mnt/"+str(sample_idx)+"_channel"+str(channel)+"augmetnation_example_"+str(augmetnation_examples)+".jpg")
 
 
