@@ -9,3 +9,4 @@ datasets
 tensorboard
 rasterio
 matplotlib
+scipy
