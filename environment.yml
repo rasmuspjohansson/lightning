@@ -7,3 +7,5 @@ dependencies:
   - pip
   - pip:
     - -r requirements.txt
+    - -e .
+    - git+https://github.com/rasmuspjohansson/albumentations-multi-channels
