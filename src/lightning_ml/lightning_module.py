@@ -113,6 +113,8 @@ class Lightning_module(LightningModule):
         self.log("val_acc", self.val_accuracy, prog_bar=True)
         #log how many epochs we have finnished (e.g 1.25 epochs) so we can use this as x axis when plotting
         self.log("epochs_as_float",float(self.epochs_done_as_float ), prog_bar=False)
+        return loss
+
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         """
