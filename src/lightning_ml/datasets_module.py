@@ -77,7 +77,7 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
         #input([json.loads(elem) for elem in self.args["augmentations"]["channel_value_augmentation"]["addition_ranges"]])
 
         #
-        transforms_to_activate_once_lightning_get_same_result_as_fastai2 = [A.VerticalFlip(p=0.5,always_apply=always_apply),A.augmentations.transforms.PixelDropout(dropout_prob=0.005, per_channel=False, drop_value=0, mask_drop_value=None, always_apply=always_apply, p=0.1),A.RandomRotate90(p=0.5,always_apply=always_apply),A.HorizontalFlip(p=0.5,always_apply=always_apply),A.augmentations.transforms.ChannelValueAugmentation (multiplicative_ranges=self.args["augmentations"]["channel_value_augmentation"]["multiplicative_ranges"],addition_ranges=self.args["augmentations"]["channel_value_augmentation"]["addition_ranges"],always_apply=always_apply, p=0.5),albumentations.augmentations.dropout.channel_dropout.ChannelDropout(p=0.5,droppable_channels=self.args["droppable_channels"])	]
+        #transforms_to_activate_once_lightning_get_same_result_as_fastai2 = [A.VerticalFlip(p=0.5,always_apply=always_apply),A.augmentations.transforms.PixelDropout(dropout_prob=0.005, per_channel=False, drop_value=0, mask_drop_value=None, always_apply=always_apply, p=0.1),A.RandomRotate90(p=0.5,always_apply=always_apply),A.HorizontalFlip(p=0.5,always_apply=always_apply),A.augmentations.transforms.ChannelValueAugmentation (multiplicative_ranges=self.args["augmentations"]["channel_value_augmentation"]["multiplicative_ranges"],addition_ranges=self.args["augmentations"]["channel_value_augmentation"]["addition_ranges"],always_apply=always_apply, p=0.5),albumentations.augmentations.dropout.channel_dropout.ChannelDropout(p=0.5,droppable_channels=self.args["droppable_channels"])	]
 
 
         if self.args["transforms"]:
@@ -87,11 +87,12 @@ class Semantic_segmentation_pytorch_dataset(torch.utils.data.Dataset):
                     A.augmentations.geometric.transforms.PadIfNeeded(min_height=1024, min_width=1024),
                     A.augmentations.geometric.transforms.ShiftScaleRotate(p=0.5,always_apply=always_apply),
                     A.Transpose(p=0.5,always_apply=always_apply),
-                    #albumentations.augmentations.dropout.channel_dropout.ChannelDropout(p=0.5,droppable_channels=self.args["droppable_channels"]),
                     A.augmentations.transforms.RandomBrightnessContrast (brightness_limit=0.2, contrast_limit=0.2, brightness_by_max=True,always_apply=always_apply, p=0.5),
                     A.augmentations.transforms.RandomShadow (shadow_roi=(0, 0.5, 1, 1), num_shadows_lower=self.args["augmentations"]["random_shadow"]["num_shadows_lower"], num_shadows_upper=self.args["augmentations"]["random_shadow"]["num_shadows_upper"], shadow_dimension=5,always_apply=always_apply, p=0.5),
                     A.augmentations.transforms.GaussNoise(mean=0, per_channel=True,
                                                           always_apply=always_apply, p=0.5),
+                    albumentations.augmentations.dropout.channel_dropout.ChannelDropout(p=0.5,droppable_channels=self.args["droppable_channels"]),
+
 
                     A.augmentations.transforms.Normalize(mean=self.args["means"], std=self.args["stds"],max_pixel_value=255.0, always_apply=True, p=1.0),
 
