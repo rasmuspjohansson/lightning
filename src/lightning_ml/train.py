@@ -87,8 +87,8 @@ def train(args):
 
 
         trainer = Trainer(
-            accelerator=experiment_settings["accelerator"],
-            devices="auto",  # limiting got iPython runs
+            accelerator="gpu", #experiment_settings["accelerator"],
+            devices=1, #experiment_settings["devices"],  # limiting got iPython runs
             max_epochs=experiment_settings["epochs"],
             callbacks=callbacks,
             logger=loggers,

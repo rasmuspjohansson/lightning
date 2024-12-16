@@ -52,7 +52,9 @@ class Lightning_module(LightningModule):
         return x
 
     def training_step(self, batch, batch_idx):
+        print(f"Current device: {self.device}")
         x, y = batch
+        x, y = x.to(self.device), y.to(self.device)
         logits = self(x)
         loss=self.loss(logits,y)
 
